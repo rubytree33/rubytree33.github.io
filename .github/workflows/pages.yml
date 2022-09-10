@@ -41,6 +41,7 @@ jobs:
             echo "::set-output name=manager::pnpm"
             echo "::set-output name=command::i --frozen-lockfile"
             echo "::set-output name=runner:pnpm exec"
+            exit 0
           elif [ -f "${{ github.workspace }}/yarn.lock" ]; then
             echo "::set-output name=manager::yarn"
             echo "::set-output name=command::install"
