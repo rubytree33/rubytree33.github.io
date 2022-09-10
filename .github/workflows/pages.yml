@@ -40,7 +40,7 @@ jobs:
           if [ -f "${{ github.workspace }}/pnpm-lock.yaml" ]; then
             echo "::set-output name=manager::pnpm"
             echo "::set-output name=command::i --frozen-lockfile"
-            echo "::set-output name=runner:pnpx"
+            echo "::set-output name=runner:pnpm exec"
           elif [ -f "${{ github.workspace }}/yarn.lock" ]; then
             echo "::set-output name=manager::yarn"
             echo "::set-output name=command::install"
