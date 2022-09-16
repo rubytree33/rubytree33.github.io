@@ -8,7 +8,7 @@ const Home: NextPage = () =>
       <title>about rubytree</title>
       <meta name="description" content="about rubytree" />
     </Head>
-    <header className="p-2 mb-4 flex flex-row items-baseline space-x-8
+    <header className="p-2 mb-4 flex flex-row items-center space-x-8
                       border-b border-rose-600 border-opacity-50 text-rose-900">
       <Link href="/" className="ml-16 p-1 pt-0  text-3xl font-extralight text-rose-600">
         rubytree
