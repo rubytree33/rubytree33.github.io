@@ -19,7 +19,7 @@ const Home: NextPage = () =>
       <Link href="https://github.com/rubytree33">
         github
       </Link>
-      <Link href="https://github.com/rubytree33/rubytree33.github.io/main/pages/index.tsx">
+      <Link href="https://github.com/rubytree33/rubytree33.github.io/blob/main/pages/index.tsx">
         page source
       </Link>
     </header>
