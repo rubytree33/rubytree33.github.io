@@ -1,46 +1,70 @@
 import _ from 'lodash'
 
 const Logo = ({ className = "" }) => {
-  const size = 32
+  const size = 32  // side length of <svg>
 
-  const nFacets = 3
-  // units are coords 0 0 to 1 1, full turn = 1
+  const turn = 2*Math.PI  // full turn in radians
+  const PHI = (Math.sqrt(5)+1)/2  // golden ratio
+  // arc (radians) <-> subtended segment length (in unit circle)
+  const seglen = (a: number) => 2*Math.sin(a/2)
+  const segleninv = (a: number) => Math.asin(a/2)*2
+
   const arcSign = 1  // 1 = cw, -1 = ccw
-  const startFrac = 1/2  // alignment of start of facets
-  const arcLength = 2/5  // arc length used by facets
-  const strokeWidth = 1/32
-  const pad = 1/8  // distance of vertices from circumscribing circle
+  const nFacets = 3  // number of facet segments at the top
+  const facetsStart = 1/2*turn  // alignment of start of facets
+  const facetsAngle = (1-1/PHI)*turn  // angle used by facets
+  const facetRatio = 1/PHI  // ratio of top facet length to facet rim
+  const strokeWidth = 1/32  // ruby stroke width
+  const outlineWidth = 0  // circle outline stroke width
+  const outlinePad = 1/8  // pad between circle outline and ruby
 
+  const topFacetAngle = segleninv(facetRatio * seglen(facetsAngle))
+  const sideFacetAngle = (facetsAngle-topFacetAngle)/2
+
+  // coordinates for the <path>
   const coords =
-    _.range(nFacets + 1)  // vertices of the facets
-      .map(i => i/nFacets * arcLength)  // distribute evenly
-      .concat([(1 + arcLength) / 2, 1])  // add bottom of ruby and close path
-      .map(frac => arcSign * Math.PI*2 * (startFrac + frac))  // to radians
-      .map(rad => [Math.cos(rad), Math.sin(rad)])  // to unit circle coords
-    .map(coordPair => coordPair
-      .map(xI => xI / 2)  // rescale for viewbox
-      .map(xI => xI * (1 - pad*2))  // pad
-      .map(xI => xI + 1/2)  // center in viewbox
-      .map(xI => xI * (1 - strokeWidth) + strokeWidth/2) // pad for stroke
-      .map(xI => xI * size)  // actual size
-    )
+    // vertices in radians
+    [
+      0,  // start
+      sideFacetAngle,  // first facet
+      sideFacetAngle + topFacetAngle,  // second facet
+      facetsAngle,  // third facet
+      (facetsAngle + turn) / 2,  // bottom point (halfway)
+      turn,  // return to start
+    ]
+    // vertex coordinates on unit circle
+    .map(rad => {
+      rad = arcSign * (facetsStart + rad)  // align and reorient
+      return [Math.cos(rad), Math.sin(rad)]  // to unit circle coords
+    })
+    // reposition within viewbox
+    .map(coordPair => coordPair.map(xI => {
+      xI = xI / 2  // rescale for viewbox
+      xI = xI * (1 - outlinePad*2)  // pad for outline
+      xI = xI + 1/2  // center in viewbox
+      xI = xI * (1 - outlineWidth) + outlineWidth/2 // pad for stroke
+      xI = xI * size  // actual size
+      return xI
+    }))
 
+  // sequence of coordinates -> <path> instructions
   const toD = (coords: number[][]) =>
     "M" + coords.map(([x,y])=>x+" "+y).join("L")
-
-  // just one path for now
-  const pathD = ""
-    + toD(coords)
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
         className={className}>
-      <circle className="stroke-ruby-500 fill-ruby-500"
+      <circle className="stroke-ruby-50 fill-ruby-500"
         cx="50%" cy="50%"
-        r={size*(1-strokeWidth)/2} strokeWidth={size*strokeWidth} />
+        r={size*(1-outlineWidth)/2} strokeWidth={size*outlineWidth} />
       <path className="fill-transparent stroke-ruby-50"
         strokeLinejoin="round" strokeLinecap="round"
-        d={pathD} strokeWidth={size*strokeWidth} />
+        strokeWidth={size*strokeWidth}
+        d={""
+          + toD(coords) + "Z"  // gem outline, closed
+          + toD([coords[0], coords[nFacets]])  // rim
+          + toD([coords[1], coords.at(-2) as number[], coords[nFacets-1]])  // segments to bottom point
+        } />
     </svg>
   )
 }
