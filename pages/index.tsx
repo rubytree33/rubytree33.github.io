@@ -15,9 +15,6 @@ const Home: NextPage = () => (
         <Logo className="inline mr-1 align-middle" />
         rubytree
       </Link>
-      <Link href="/">
-        about
-      </Link>
       <Link href="https://github.com/rubytree33">
         github
       </Link>
