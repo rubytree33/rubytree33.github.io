@@ -3,7 +3,7 @@ import Document, { Html, Head, Main, NextScript } from 'next/document'
 class MyDocument extends Document {
   render() {
     return (
-      <Html lang="en" className="text-ruby-900 bg-ruby-50 dark:text-ruby-50 dark:bg-black">
+      <Html lang="en" className="text-ruby-900 bg-ruby-50 dark:text-ruby-50 dark:bg-ruby-950">
         <Head>
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           {/* <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /> */}
