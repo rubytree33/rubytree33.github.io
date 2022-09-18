@@ -34,10 +34,12 @@ const Logo = ({ className = "" }) => {
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
-        className={className + " stroke-ruby-500 fill-ruby-500"}>
-      <circle cx="50%" cy="50%"
+        className={className}>
+      <circle className="stroke-ruby-500 fill-ruby-500"
+        cx="50%" cy="50%"
         r={size*(1-strokeWidth)/2} strokeWidth={size*strokeWidth} />
-      <path fill="transparent" stroke="white" strokeLinejoin="round"
+      <path className="fill-transparent stroke-ruby-50"
+        strokeLinejoin="round" strokeLinecap="round"
         d={pathD} strokeWidth={size*strokeWidth} />
     </svg>
   )
