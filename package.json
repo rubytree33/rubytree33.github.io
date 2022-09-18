@@ -10,11 +10,13 @@
     "export": "next export"
   },
   "dependencies": {
+    "lodash": "^4.17.21",
     "next": "12.3.0",
     "react": "18.2.0",
     "react-dom": "18.2.0"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.185",
     "@types/node": "18.7.14",
     "@types/react": "18.0.18",
     "@types/react-dom": "18.0.6",
