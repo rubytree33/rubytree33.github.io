@@ -10,7 +10,7 @@ const Home: NextPage = () => (
       <meta name="description" content="about rubytree" />
     </Head>
     <header className="p-2 mb-4 flex flex-row items-center space-x-10 h-14
-                      border-b border-ruby-600 border-opacity-50 text-ruby-900 dark:text-rose-200">
+                      border-b border-ruby-600 border-opacity-50 text-ruby-900 dark:text-ruby-200">
       <Link href="/" className="ml-16 p-1 pt-0  text-3xl font-extralight text-ruby-600">
         <Logo className="inline mr-3 align-middle" />
         rubytree
