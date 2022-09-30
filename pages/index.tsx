@@ -6,7 +6,7 @@ const Home: NextPage = () => (
     <Head>
       <title>rubytree</title>
     </Head>
-    <div className="space-y-1">
+    <div className="mx-auto px-8 max-w-3xl space-y-1">
       <p>
         Thanks for visiting!
       </p>

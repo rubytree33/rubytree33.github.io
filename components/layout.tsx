@@ -22,7 +22,7 @@ export default function Layout({ children }: Props) {
           source
         </Link>
       </header>
-      <main className="mx-auto px-8 max-w-3xl">
+      <main>
         {children}
       </main>
       <footer className="fixed bottom-0 p-2 mt-8">
