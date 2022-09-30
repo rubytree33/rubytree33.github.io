@@ -4,8 +4,7 @@ import Head from 'next/head'
 const Home: NextPage = () => (
   <>
     <Head>
-      <title>about rubytree</title>
-      <meta name="description" content="about rubytree" />
+      <title>rubytree</title>
     </Head>
     <div className="space-y-1">
       <p>
