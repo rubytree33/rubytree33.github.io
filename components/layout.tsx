@@ -8,28 +8,29 @@ interface Props {
 
 export default function Layout({ children }: Props) {
   return (
-    <>
+    <div className="h-full flex flex-col">
       <header className="
         w-full px-16 mb-4
         h-14 py-2
         flex flex-row items-center
-        text-ruby-900 dark:text-ruby-200">
-          <Link href="/" className="p-1 pt-0 text-3xl font-extralight text-ruby-600">
-            <Logo className="inline align-middle" />
-            <span className="sm:inline hidden ml-3">rubytree</span>
+        text-ruby-900 dark:text-ruby-200
+        ">
+        <Link href="/" className="p-1 pt-0 text-3xl font-extralight text-ruby-600">
+          <Logo className="inline align-middle" />
+          <span className="sm:inline hidden ml-3">rubytree</span>
+        </Link>
+        <div className="space-x-10 sm:ml-auto ml-10">
+          <Link href="https://github.com/rubytree33">
+            github
           </Link>
-          <div className="space-x-10 sm:ml-auto ml-10">
-            <Link href="https://github.com/rubytree33">
-              github
-            </Link>
-            <Link href="https://github.com/rubytree33/rubytree33.github.io">
-              source
-            </Link>
-          </div>
+          <Link href="https://github.com/rubytree33/rubytree33.github.io">
+            source
+          </Link>
+        </div>
       </header>
-      <main className="h-full">
+      <main className="flex-grow">
         {children}
       </main>
-    </>
+    </div>
   )
 }
