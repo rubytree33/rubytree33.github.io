@@ -1,8 +1,9 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
+import Layout from '../components/layout'
 
 const Home: NextPage = () => (
-  <>
+  <Layout>
     <Head>
       <title>rubytree</title>
     </Head>
@@ -17,7 +18,7 @@ const Home: NextPage = () => (
         Check out the links above for more information.
       </p>
     </div>
-  </>
+  </Layout>
 )
 
 export default Home
