@@ -1,6 +1,8 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import _ from 'lodash'
+import { useAppDispatch, useAppSelector } from '../app/hooks'
+import { selectSquare, deselectSquare } from '../features/chess-board/chess-board-slice'
 
 const ViewportCentered = ({ children }: any) =>
   <div className="absolute left-0 top-0">
@@ -11,8 +13,14 @@ const ViewportCentered = ({ children }: any) =>
     </div>
   </div>
 
-const Page: NextPage = () =>
-  <>
+const Page: NextPage = () => {
+  const selection = useAppSelector((state) => state.chessboard.selection)
+  const dispatch = useAppDispatch()
+
+  const handleSquare = (x: number, y: number) =>
+    dispatch(selectSquare({x, y}))
+
+  return <>
     <Head>
       <title>rubytree - chess</title>
     </Head>
@@ -31,12 +39,18 @@ const Page: NextPage = () =>
           <div key={y} className="grow basis-1/8 flex flex-row">
             {_.range(8).map (x =>
                 <button key={x} className={`
+                  relative
                   grow basis-1/8
                   z-0 rounded-md
                   ${(x + y) % 2 == 0 ? 'bg-ruby-400' : 'bg-ruby-700'}
-                  hover:z-10 hover:brightness-150 hover:drop-shadow-2xl
-                `}>
-                  {`${'abcdefgh'[x]}${8 - y}`}
+                  hover:brightness-150
+                  ${x === selection?.x && y === selection?.y && 'z-20 ring ring-white'}
+                `}
+                onClick={() => handleSquare(x, y)}
+                >
+                  <span className='absolute left-1 bottom-0 opacity-50'>
+                    {`${'abcdefgh'[x]}${8 - y}`}
+                  </span>
                 </button>
             )}
           </div>
@@ -44,5 +58,6 @@ const Page: NextPage = () =>
       </div>
     </ViewportCentered>
   </>
+}
 
 export default Page
