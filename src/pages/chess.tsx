@@ -6,9 +6,9 @@ import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { selectSquare, deselectSquare } from '../features/chess-board/chess-board-slice'
 
-const ViewportCentered = ({ children }: any) =>
+const ViewportCentered = ({ children, onClick }: any) =>
   <div className="absolute left-0 top-0">
-    <div className="relative w-screen h-screen">
+    <div className="relative w-screen h-screen" onClick={onClick}>
       <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
         {children}
       </div>
@@ -26,14 +26,16 @@ const Page: NextPage = () => {
     <Head>
       <title>rubytree - chess</title>
     </Head>
-    <ViewportCentered>
+
+    <ViewportCentered onClick={() => dispatch(deselectSquare())}>
       {/* TODO: set size with multi-dimensional breakpoints */}
       <div className="
         w-[100vmin] h-[100vmin]
         sm:w-[90vmin] sm:h-[90vmin]
         md:w-[75vmin] md:h-[75vmin]
         text-ruby-50
-        bg-ruby-700 rounded-md
+        bg-ruby-700 rounded-md ring ring-ruby-700
+        z-10
         shadow-2xl
         flex flex-col
       ">
@@ -43,12 +45,12 @@ const Page: NextPage = () => {
                 <button key={x} className={`
                   relative
                   grow basis-1/8
-                  z-0 rounded-md
+                  rounded-md
                   ${(x + y) % 2 == 0 ? 'bg-ruby-400' : 'bg-ruby-700'}
                   hover:brightness-150
                   ${x === selection?.x && y === selection?.y && 'z-20 ring ring-white'}
                 `}
-                onClick={() => handleSquare(x, y)}
+                onClick={(e) => { e.stopPropagation(); handleSquare(x, y) }}
                 >
                   <span className='absolute left-1 bottom-0 opacity-50'>
                     {`${'abcdefgh'[x]}${8 - y}`}
@@ -59,9 +61,10 @@ const Page: NextPage = () => {
         )}
       </div>
     </ViewportCentered>
+
     <div className='absolute left-2 top-2'>
       <Link href='/'>
-        <Logo className='z-50 drop-shadow-sm' />
+        <Logo className='z-50 drop-shadow-sm hover:brightness-150' />
       </Link>
     </div>
   </>
