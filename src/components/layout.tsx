@@ -15,7 +15,7 @@ export default function Layout({ children }: Props) {
         flex flex-row items-center
         text-ruby-900 dark:text-ruby-200
         ">
-        <Link href="/" className="p-1 pt-0 text-3xl font-extralight text-ruby-600">
+        <Link href="/" className="p-1 pt-0 text-3xl font-extralight text-ruby-500">
           <Logo className="inline align-middle" />
           <span className="sm:inline hidden ml-3">rubytree</span>
         </Link>
