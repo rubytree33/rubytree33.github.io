@@ -1,5 +1,7 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
+import Link from 'next/link'
+import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { selectSquare, deselectSquare } from '../features/chess-board/chess-board-slice'
@@ -57,6 +59,11 @@ const Page: NextPage = () => {
         )}
       </div>
     </ViewportCentered>
+    <div className='absolute left-2 top-2'>
+      <Link href='/'>
+        <Logo className='z-50 drop-shadow-sm' />
+      </Link>
+    </div>
   </>
 }
 
