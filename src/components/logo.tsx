@@ -1,6 +1,6 @@
 import _ from 'lodash'
 
-const Logo = ({ className = "", size = 32 }) => {
+const Logo = ({ className = '', size = 32, alt = 'rubytree' }) => {
   const turn = 2*Math.PI  // full turn in radians
   const PHI = (Math.sqrt(5)+1)/2  // golden ratio
   // arc (radians) <-> subtended segment length (in unit circle)
@@ -52,7 +52,9 @@ const Logo = ({ className = "", size = 32 }) => {
 
   return (
     <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}
+        role='img' aria-label={alt}
         className={className}>
+      <desc>{alt}</desc>
       <circle className="stroke-ruby-50 fill-ruby-500"
         cx="50%" cy="50%"
         r={size*(1-outlineWidth)/2} strokeWidth={size*outlineWidth} />
