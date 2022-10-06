@@ -4,7 +4,7 @@ import Link from 'next/link'
 import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
-import { selectSquare, deselectSquare } from '../features/chess-board/chess-board-slice'
+import { selectSquare, deselectSquare } from '../features/chess/chess-slice'
 
 const ViewportCentered = ({ children, onClick }: any) =>
   <div className="absolute left-0 top-0">

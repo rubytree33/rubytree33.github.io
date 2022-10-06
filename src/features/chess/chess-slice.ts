@@ -13,8 +13,8 @@ const initialState: BoardState = {
   selection: null,
 }
 
-const chessboardSlice = createSlice({
-  name: 'chessboard',
+const chessSlice = createSlice({
+  name: 'chess',
   initialState,
   reducers: {
     deselectSquare(state) {
@@ -26,6 +26,6 @@ const chessboardSlice = createSlice({
   },
 })
 
-export const { selectSquare, deselectSquare } = chessboardSlice.actions
-export default chessboardSlice.reducer
+export const { selectSquare, deselectSquare } = chessSlice.actions
+export default chessSlice.reducer
 export type { Coord }
