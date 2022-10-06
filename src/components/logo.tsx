@@ -42,6 +42,7 @@ const Logo = ({ className = "", size = 32 }) => {
       xI = xI + 1/2  // center in viewbox
       xI = xI * (1 - outlineWidth) + outlineWidth/2 // pad for stroke
       xI = xI * size  // actual size
+      xI = Math.round(xI * 1e12) / 1e12  // truncate precision to avoid hydration discrepancy
       return xI
     }))
 
