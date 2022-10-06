@@ -63,9 +63,9 @@ const Page: NextPage = () => {
       </div>
     </ViewportCentered>
 
-    <div className='absolute left-2 top-2'>
+    <div className='absolute left-3 top-3'>
       <Link href='/'>
-        <Logo className='z-50 drop-shadow-sm hover:brightness-150' />
+        <Logo size={48} className='z-50 drop-shadow-sm hover:brightness-150' />
       </Link>
     </div>
   </>

@@ -1,8 +1,6 @@
 import _ from 'lodash'
 
-const Logo = ({ className = "" }) => {
-  const size = 32  // side length of <svg>
-
+const Logo = ({ className = "", size = 32 }) => {
   const turn = 2*Math.PI  // full turn in radians
   const PHI = (Math.sqrt(5)+1)/2  // golden ratio
   // arc (radians) <-> subtended segment length (in unit circle)
