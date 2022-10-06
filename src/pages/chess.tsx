@@ -65,7 +65,7 @@ const Page: NextPage = () => {
 
     <div className='absolute left-3 top-3'>
       <Link href='/'>
-        <Logo size={48} className='z-50 drop-shadow-sm hover:brightness-150' />
+        <Logo alt='back' size={48} className='z-50 drop-shadow-sm hover:brightness-150' />
       </Link>
     </div>
   </>
