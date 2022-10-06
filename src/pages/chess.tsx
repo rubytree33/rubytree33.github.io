@@ -28,11 +28,12 @@ const Page: NextPage = () => {
     </Head>
 
     <ViewportCentered onClick={() => dispatch(deselectSquare())}>
-      {/* TODO: set size with multi-dimensional breakpoints */}
       <div className="
         w-[100vmin] h-[100vmin]
-        sm:w-[90vmin] sm:h-[90vmin]
-        md:w-[75vmin] md:h-[75vmin]
+        portrait:sm:w-[90vmin] portrait:sm:h-[90vmin]
+        portrait:md:w-[75vmin] portrait:md:h-[75vmin]
+        landscape:lg:w-[90vmin] landscape:lg:h-[90vmin]
+        landscape:xl:w-[75vmin] landscape:xl:h-[75vmin]
         text-ruby-50
         bg-ruby-700 rounded-md ring ring-ruby-700
         z-10
