@@ -53,7 +53,7 @@ const initialState: BoardState = {
 }
 
 const tryMove = (from: Coord, to: Coord) => {
-  console.log('moving pieces not yet implemented')
+  console.warn('moving pieces not yet implemented')
 }
 
 const chessSlice = createSlice({

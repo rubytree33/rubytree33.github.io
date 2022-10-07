@@ -28,8 +28,9 @@ const Page: NextPage = () => {
   }
 
   const Square = ({ key, file, rank, className }: SquareProps) => {
-    if (!(file && rank)) {
-      throw new Error('Cannot render <Square /> without file/rank')
+    if (file === undefined || rank === undefined) {
+      console.error('Cannot render <Square /> without file/rank')
+      return <></>
     }
 
     const isA1Dark = true
@@ -51,14 +52,14 @@ const Page: NextPage = () => {
         }}
       >
         {/* piece */}
-        <div className={`
+        {piece && <div className={`
             absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
             text-3xl font-bold
-            ${piece && ['text-ruby-50', 'text-ruby-950'][piece.color]}
+            ${['text-ruby-50', 'text-ruby-950'][piece.color]}
           `}
         >
-          {piece && 'PNBRQK'[piece.type]}
-        </div>
+          {'PNBRQK'[piece.type]}
+        </div>}
         {/* coordinate */}
         <div className='absolute left-1 bottom-0 opacity-50'>
           {`${'abcdefgh'[file]}${rank}`}
@@ -83,12 +84,12 @@ const Page: NextPage = () => {
         bg-ruby-700 rounded-md ring ring-ruby-700
         z-10
         shadow-2xl
-        flex flex-col
+        flex flex-col-reverse
       ">
-        {_.range(8).map(y =>
-          <div key={y} className="grow basis-1/8 flex flex-row">
-            {_.range(8).map (x =>
-              <Square key={x} file={x} rank={7 - y} className='grow basis-1/8' />
+        {_.range(8).map(rank =>
+          <div key={rank} className="grow basis-1/8 flex flex-row">
+            {_.range(8).map (file =>
+              <Square key={file} file={file} rank={rank} className='grow basis-1/8' />
             )}
           </div>
         )}
