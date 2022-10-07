@@ -16,11 +16,45 @@ const ViewportCentered = ({ children, onClick }: any) =>
   </div>
 
 const Page: NextPage = () => {
-  const selection = useAppSelector((state) => state.chessboard.selection)
   const dispatch = useAppDispatch()
+  const selection = useAppSelector(state => state.chess.selection)
+  const board = useAppSelector(state => state.chess.board)
 
-  const handleSquare = (x: number, y: number) =>
-    dispatch(selectSquare({x, y}))
+  const Square = ({ key = -1, file = -1, rank = -1, className = '' }) => {
+    const isA1Dark = true
+
+    const piece = board[file][rank]
+
+    return <>
+      <button key={key} className={`
+          ${className}
+          rounded-md
+          ${(file + rank) % 2 == Number(isA1Dark) ? 'bg-ruby-400' : 'bg-ruby-700'}
+          hover:brightness-150
+          ${file === selection?.file && rank === selection?.rank && 'z-20 ring ring-white'}
+          relative
+        `}
+        onClick={e => {
+          e.stopPropagation()
+          dispatch(selectSquare({file, rank}))
+        }}
+      >
+        {/* piece */}
+        <div className={`
+            absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+            text-3xl font-bold
+            ${piece && ['text-ruby-50', 'text-ruby-950'][piece.color]}
+          `}
+        >
+          {piece && 'PNBRQK'[piece.type]}
+        </div>
+        {/* coordinate */}
+        <div className='absolute left-1 bottom-0 opacity-50'>
+          {`${'abcdefgh'[file]}${rank}`}
+        </div>
+      </button>
+    </>
+  }
 
   return <>
     <Head>
@@ -43,20 +77,7 @@ const Page: NextPage = () => {
         {_.range(8).map(y =>
           <div key={y} className="grow basis-1/8 flex flex-row">
             {_.range(8).map (x =>
-                <button key={x} className={`
-                  relative
-                  grow basis-1/8
-                  rounded-md
-                  ${(x + y) % 2 == 0 ? 'bg-ruby-400' : 'bg-ruby-700'}
-                  hover:brightness-150
-                  ${x === selection?.x && y === selection?.y && 'z-20 ring ring-white'}
-                `}
-                onClick={(e) => { e.stopPropagation(); handleSquare(x, y) }}
-                >
-                  <span className='absolute left-1 bottom-0 opacity-50'>
-                    {`${'abcdefgh'[x]}${8 - y}`}
-                  </span>
-                </button>
+              <Square key={x} file={x} rank={7 - y} className='grow basis-1/8' />
             )}
           </div>
         )}
