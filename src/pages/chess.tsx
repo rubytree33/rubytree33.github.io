@@ -20,7 +20,18 @@ const Page: NextPage = () => {
   const selection = useAppSelector(state => state.chess.selection)
   const board = useAppSelector(state => state.chess.board)
 
-  const Square = ({ key = -1, file = -1, rank = -1, className = '' }) => {
+  interface SquareProps {
+    key?: number,
+    file?: number,
+    rank?: number,
+    className?: string,
+  }
+
+  const Square = ({ key, file, rank, className }: SquareProps) => {
+    if (!(file && rank)) {
+      throw new Error('Cannot render <Square /> without file/rank')
+    }
+
     const isA1Dark = true
 
     const piece = board[file][rank]
