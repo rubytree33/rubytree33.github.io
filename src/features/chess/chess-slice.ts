@@ -18,11 +18,13 @@ const enum File { Fa = 0, Fb, Fc, Fd, Fe, Ff, Fg, Fh }
 
 interface BoardState {
   selection: null | Coord,
+  turn: PieceColor,
   board: P[][],
 }
 
 const initialState: BoardState = {
   selection: null,
+  turn: PieceColor.White,
   board: _.range(8).map(x =>
     _.range(8).map(y => {
       // rank 3-6 empty
@@ -68,18 +70,20 @@ const chessSlice = createSlice({
       const old = state.selection
       const selection = action.payload
 
+      // just select a piece if no square is selected
       if (!old) {
-        if (state.board[selection.file][selection.rank]) {
-          // just select the piece if no square is selected
+        const piece = state.board[selection.file][selection.rank] 
+        // only select pieces of the player whose turn it is
+        if (piece && piece.color === state.turn) {
           state.selection = selection
         }
       }
+      // remove selection if same square is selected
       else if (old.file === selection.file && old.rank === selection.rank) {
-        // remove selection if same square is selected
         state.selection = null
       }
+      // try to move if new square is selected
       else {
-        // try to move if new square is selected
         tryMove(old, selection)
         state.selection = null
       }
