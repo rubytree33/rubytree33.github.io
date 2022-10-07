@@ -36,6 +36,7 @@ const Page: NextPage = () => {
     const isA1Dark = true
 
     const piece = board[file][rank]
+    const isSelected = file === selection?.file && rank === selection?.rank
 
     return <>
       <button key={key} className={`
@@ -43,7 +44,7 @@ const Page: NextPage = () => {
           rounded-md
           ${(file + rank) % 2 == Number(isA1Dark) ? 'bg-ruby-400' : 'bg-ruby-700'}
           hover:brightness-150
-          ${file === selection?.file && rank === selection?.rank && 'z-20 ring ring-white'}
+          ${isSelected && 'z-20 ring ring-white'}
           relative
         `}
         onClick={e => {
@@ -56,6 +57,7 @@ const Page: NextPage = () => {
             absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
             text-3xl font-bold
             ${['text-ruby-50', 'text-ruby-950'][piece.color]}
+            ${isSelected && 'animate-pulse'}
           `}
         >
           {'PNBRQK'[piece.type]}
