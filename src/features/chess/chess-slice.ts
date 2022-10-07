@@ -52,6 +52,10 @@ const initialState: BoardState = {
     })),
 }
 
+const tryMove = (from: Coord, to: Coord) => {
+  console.log('moving pieces not yet implemented')
+}
+
 const chessSlice = createSlice({
   name: 'chess',
   initialState,
@@ -61,7 +65,24 @@ const chessSlice = createSlice({
     },
 
     selectSquare(state, action: PayloadAction<Coord>) {
-      state.selection = action.payload
+      const old = state.selection
+      const selection = action.payload
+
+      if (!old) {
+        if (state.board[selection.file][selection.rank]) {
+          // just select the piece if no square is selected
+          state.selection = selection
+        }
+      }
+      else if (old.file === selection.file && old.rank === selection.rank) {
+        // remove selection if same square is selected
+        state.selection = null
+      }
+      else {
+        // try to move if new square is selected
+        tryMove(old, selection)
+        state.selection = null
+      }
     },
   },
 })
