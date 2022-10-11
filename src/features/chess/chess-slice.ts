@@ -1,96 +1,102 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { immerable } from 'immer'
 import _ from 'lodash'
+import { Coord, Move, Chess, PieceColor, PieceType } from './chess'
 
-interface Coord {
-  file: number,
-  rank: number,
+class ChessState {
+  [immerable] = true
+  /** The coordinate of the selected piece if there is one */
+  selection: null | Coord = null
+  /** A move where a pawn is about to promote if such a move is being confirmed */
+  promotionDraft: null | Move = null
+  /** Information about an interface-locking animation if there is one */
+  activeAnimation: null | {
+    onComplete?: null | (() => void),
+  } = null
+  /** The current state of the game */
+  game: Chess = new Chess()
+
+  /** Reset move selection */
+  deselect() {
+    this.selection = null
+    this.promotionDraft = null
+  }
+
+  /** Check if this move is illegal and if so emit an error to console */
+  checkIllegal(move: Move): boolean {
+    const isIllegal = !this.game.canMove(move)
+    if (isIllegal) {
+      console.error('An illegal move was attempted')
+    }
+    return isIllegal
+  }
+
+  /** Start an animated move */
+  startMove(move: Move, onComplete = (()=>{})): void {
+    // TODO: implement animation and interface lock; for now the move happens instantly
+    this.game = this.game.afterMove(move)
+  }
+
+  /** Try to start a move (as an action from the interface) */
+  tryMove(move: Move): void {
+    if (this.checkIllegal(move)) return
+    // activate promotion interface if promoting move is started
+    if (this.game.doesNeedPromotion(move)) {
+      this.promotionDraft = move
+      return
+    }
+    // immediately begin legal non-promotion moves
+    this.startMove(move)
+  }
 }
 
-const enum PieceColor { White, Black }
-/** Chess piece type in standard notation:
- *  Pawn, kNight, Bishop, Rook, Queen, King */
-const enum PieceType { P, N, B, R, Q, K }
-/** A chess piece, or empty. (Board square contents) */
-type P = null | { color: PieceColor, type: PieceType }
-
-const enum Rank { R1 = 0, R2, R3, R4, R5, R6, R7, R8 }
-const enum File { Fa = 0, Fb, Fc, Fd, Fe, Ff, Fg, Fh }
-
-interface BoardState {
-  selection: null | Coord,
-  turn: PieceColor,
-  board: P[][],
-}
-
-const initialState: BoardState = {
-  selection: null,
-  turn: PieceColor.White,
-  board: _.range(8).map(x =>
-    _.range(8).map(y => {
-      // rank 3-6 empty
-      if (Rank.R3 <= y && y <= Rank.R6) {
-        return null
-      }
-
-      // white looks like this:
-      //   rank 2: P P P P P P P P
-      //   rank 1: R N B Q K B N R
-      //     file: a b c d e f g h
-      // black has the same pieces on ranks 7 and 8, vertically mirrored
-
-      // white on low ranks, black on high ranks
-      const color = y <= Rank.R2 ? PieceColor.White : PieceColor.Black
-
-      const type =
-        y === Rank.R2 || y === Rank.R7 ? PieceType.P :  // pawns on ranks 2 and 7
-        x === File.Fa || x === File.Fh ? PieceType.R :  // rooks on files a and h
-        x === File.Fb || x === File.Fg ? PieceType.N :  // knights on files b and g
-        x === File.Fc || x === File.Ff ? PieceType.B :  // bishops on files c and f
-        x === File.Fd                  ? PieceType.Q :  // queens on file d
-        x === File.Fe                  ? PieceType.K :  // kings on file e
-        (()=>{throw new Error('Could not initialize chessboard')})()
-
-      return { color, type }
-    })),
-}
-
-const tryMove = (from: Coord, to: Coord) => {
-  console.warn('moving pieces not yet implemented')
-}
+const initialState: ChessState = new ChessState()
 
 const chessSlice = createSlice({
   name: 'chess',
   initialState,
   reducers: {
     deselectSquare(state) {
-      state.selection = null
+      state.deselect()
     },
 
     selectSquare(state, action: PayloadAction<Coord>) {
-      const old = state.selection
-      const selection = action.payload
+      const game = state.game
+      const oldSelection = state.selection
+      const newSelection = action.payload
 
       // just select a piece if no square is selected
-      if (!old) {
-        const piece = state.board[selection.file][selection.rank] 
+      if (!oldSelection) {
+        const piece = game.at(newSelection)
         // only select pieces of the player whose turn it is
-        if (piece && piece.color === state.turn) {
-          state.selection = selection
+        if (piece && piece.color === game.turnColor) {
+          state.selection = newSelection
         }
       }
       // remove selection if same square is selected
-      else if (old.file === selection.file && old.rank === selection.rank) {
-        state.selection = null
+      else if (oldSelection.is(newSelection)) {
+        state.deselect()
       }
       // try to move if new square is selected
       else {
-        tryMove(old, selection)
-        state.selection = null
+        state.tryMove(new Move(oldSelection, newSelection))
+        state.deselect()
       }
+    },
+
+    /** Interface confirmation of a promoting move, with the new piece type */
+    promote(state, action: PayloadAction<PieceType>) {
+      const newType = action.payload
+      const move = state.promotionDraft
+      if (!move) {
+        console.error('promotion attempted without move coordinates')
+        return
+      }
+      state.startMove(new Move(move.from, move.to, newType))
+      state.deselect()
     },
   },
 })
 
 export const { selectSquare, deselectSquare } = chessSlice.actions
 export default chessSlice.reducer
-export type { Coord, P }

@@ -9,6 +9,7 @@ specifiers:
   autoprefixer: ^10.4.12
   eslint: 8.23.0
   eslint-config-next: 12.2.5
+  immer: ^9.0.15
   lodash: ^4.17.21
   next: 12.3.0
   postcss: ^8.4.17
@@ -20,6 +21,7 @@ specifiers:
 
 dependencies:
   '@reduxjs/toolkit': 1.8.5_kuo2ie247izvzll3jejufdtq3q
+  immer: 9.0.15
   lodash: 4.17.21
   next: 12.3.0_biqbaboplfbrettd7655fr4n2y
   react: 18.2.0

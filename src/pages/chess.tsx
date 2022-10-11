@@ -5,6 +5,7 @@ import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { selectSquare, deselectSquare } from '../features/chess/chess-slice'
+import { Coord } from '../features/chess/chess'
 
 const ViewportCentered = ({ children, onClick }: any) =>
   <div className="absolute left-0 top-0">
@@ -18,7 +19,7 @@ const ViewportCentered = ({ children, onClick }: any) =>
 const Page: NextPage = () => {
   const dispatch = useAppDispatch()
   const selection = useAppSelector(state => state.chess.selection)
-  const board = useAppSelector(state => state.chess.board)
+  const board = useAppSelector(state => state.chess.game.board)
 
   interface SquareProps {
     key?: number,
@@ -49,7 +50,7 @@ const Page: NextPage = () => {
         `}
         onClick={e => {
           e.stopPropagation()
-          dispatch(selectSquare({file, rank}))
+          dispatch(selectSquare(new Coord(file, rank)))
         }}
       >
         {/* piece */}
