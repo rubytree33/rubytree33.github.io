@@ -5,7 +5,6 @@ import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { selectSquare, deselectSquare } from '../features/chess/chess-slice'
-import { Coord } from '../features/chess/chess'
 
 const ViewportCentered = ({ children, onClick }: any) =>
   <div className="absolute left-0 top-0">
@@ -50,7 +49,7 @@ const Page: NextPage = () => {
         `}
         onClick={e => {
           e.stopPropagation()
-          dispatch(selectSquare(new Coord(file, rank)))
+          dispatch(selectSquare({ file, rank }))
         }}
       >
         {/* piece */}
