@@ -34,7 +34,7 @@ class ChessState {
   /** Start an animated move */
   startMove(move: Move, onComplete = (()=>{})): void {
     // TODO: implement animation and interface lock; for now the move happens instantly
-    this.game = this.game.afterMove(move)
+    this.game = this.game.afterMove(move) || this.game
   }
 
   /** Try to start a move (as an action from the interface) */

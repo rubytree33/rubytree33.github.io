@@ -41,7 +41,7 @@ class Coord {
 const enum PieceColor { White, Black }
 
 /** Chess piece type in standard notation:
- *  Pawn, kNight, Bishop, Rook, Queen, King */
+ *  Pawn, **kNight**, Bishop, Rook, Queen, King */
 const enum PieceType { P, N, B, R, Q, K }
 
 /** A chess piece, or empty. (Board square contents) */
@@ -113,11 +113,25 @@ class Chess {
       return { color, type }
     }))
 
+  static isInBounds(coord: Coord): boolean {
+    const { file, rank } = coord
+    return 0 <= file && file <= 7 && 0 <= rank && rank <= 7
+  }
+
   /** The square contents at `coord` (`null` if out of bounds) */
   at(coord: Coord): P {
     const { file, rank } = coord
-    return 0 <= file && file <= 7 && 0 <= rank && rank <= 7
-      ? this.board[coord.file][coord.rank] : null
+    return Chess.isInBounds(coord) ? this.board[file][rank] : null
+  }
+
+  static coords: Coord[] =
+    _.range(8).flatMap(file =>
+      _.range(8).map(rank =>
+        new Coord(file, rank)))
+
+  /** The coordinates of the pieces of the current player */
+  friendlyCoords(): Coord[] {
+    return Chess.coords.filter(coord => this.at(coord)?.color === this.turnColor)
   }
 
   /** The same board state with the contents at `coord` instead being `piece` */
@@ -127,26 +141,24 @@ class Chess {
     })
   }
 
-  /** Update canEnPassant for the next turn */
-  _withCanEnPassant(move: Move): Chess {
-    return produce(this, draft => {
-      const { from, to } = move
+  /** Remove (capture) the piece behind the pawn that is capturing en passant, if such a move was played.
+   *  Also ensure the en passant flag is correctly set for the next turn.
+  */
+  _withEnPassant(move: Move): Chess {
+    const { from, to } = move
+    // the direction the pawn moves
+    const forward = this.turnColor === PieceColor.White ? 1 : -1
+    const behind = to.up(-forward)
+    // the move was en passant only if it is a pawn and was moving behind the en passant square
+    const isEnPassant = this.at(from)?.type === PieceType.P && this.enPassantTo?.is(behind)
+    // if it happens, delete the enemy pawn behind the pawn
+    const withCaptured = isEnPassant ? this._withAt(behind, null) : this
+    return produce(withCaptured, draft => {
+      // pawn can be captured en passant only if it moved two squares (only possibly in rank)
       draft.enPassantTo =
         this.at(from)?.type === PieceType.P && Math.abs(from.rank - to.rank) === 2
           ? to : null
     })
-  }
-
-  /** Remove (capture) the piece behind the pawn that is capturing en passant, if such a move was played. */
-  _withCapturedEnPassant(move: Move): Chess {
-    const { from, to } = move
-    // the move was en passant only if it is a pawn and was moving into the en passant square
-    const isEnPassant = this.at(from)?.type === PieceType.P && this.enPassantTo?.is(to)
-    if (!isEnPassant) return this
-    // delete the piece (pawn) at the square behind it
-    // (en passant can only occur on R3 and R6, capturing R4 and R5 respectively)
-    const capturedCoord = new Coord(to.file, to.rank === Rank.R3 ? Rank.R4 : Rank.R5)
-    return this._withAt(capturedCoord, null)
   }
 
   /** Complete a castling move by updating `this.canCastle` and moving the right rook,
@@ -211,10 +223,45 @@ class Chess {
     })
   }
 
-  legalMovesFrom(from: Coord): Move[] {
-    throw new Error('not yet implemented')
+  /** Legal moves from the current position plus moves that put the player's king in check. */
+  // (defined separately to prevent infinite mutual recursion in move finding)
+  _illegalMovesFrom(from: Coord): Move[] {
     let moves: Move[] = []
-    const isWhite = this.turnColor === PieceColor.White
+    const friendly = this.turnColor
+    const isWhite = friendly === PieceColor.White
+    const opponent = isWhite ? PieceColor.Black : PieceColor.White
+    /** Add a legal move to the result, ignoring out of bounds */
+    const allow = (to: Coord): void => {
+      if (Chess.isInBounds(to)) {
+        moves.push(new Move(from, to))
+      }
+    }
+    /** Add legal moves in a direction until hitting a piece or leaving the board, including capture if it's an enemy */
+    const allowRay = (heading: Coord): void => {
+      let to = from
+      do {
+        to = to.plus(heading)
+        // move into empty squares or capture the enemy if this is the last one
+        if (this.at(to)?.color !== friendly) {
+          allow(to)
+        }
+      } while (this.at(to)?.color === null)
+    }
+    /** Add "bishop moves" (diagonal) */
+    const allowBishop = (): void => {
+      for (const dFile of [-1, 1]) {
+        for (const dRank of [-1, 1]) {
+          allowRay(new Coord(dFile, dRank))
+        }
+      }
+    }
+    /** Add "rook moves" (orthogonal) */
+    const allowRook = (): void => {
+      for (const dEither of [-1, 1]) {
+        allowRay(new Coord(dEither, 0))
+        allowRay(new Coord(0, dEither))
+      }
+    }
     switch (this.at(from)?.type) {
       case null:
         // can't move an empty square
@@ -226,10 +273,10 @@ class Chess {
         const promotingRank = isWhite ? Rank.R8 : Rank.R1
         // the direction the pawn moves, relative to up
         const step = isWhite ? 1 : -1
-        const allow = (to: Coord): void => {
+        const allowPawn = (to: Coord): void => {
           // augment the moves we add with promotion options if they are on the promoting rank
           if (to.rank !== promotingRank) {
-            moves.push(new Move(from, to))
+            allow(to)
           }
           [PieceType.N, PieceType.B, PieceType.R, PieceType.Q].map(type => {
             moves.push(new Move(from, to, type))
@@ -237,32 +284,81 @@ class Chess {
         }
         // if on home square allow moving two spaces
         if (from.rank === homeRank) {
-          allow(new Coord(from.file, from.rank + step))
+          allowPawn(from.up(2*step))
         }
         // we can en passant if our pawn can capture forward into it
         const enPassantTo = this.enPassantTo
         if (enPassantTo
             && Math.abs(from.file - enPassantTo.file) === 1
             && from.rank + step === enPassantTo.rank) {
-          allow(enPassantTo)
+          allowPawn(enPassantTo)
         }
         // if forward space is clear, allow move
         const forwardTo = from.up(step)
         if (!this.at(forwardTo)) {
-          allow(forwardTo)
+          allowPawn(forwardTo)
         }
         // if diagonal step either way is occupied by enemy, allow capture
-        const allowCapture = (to: Coord) => {
-          if (this.at(to)) {
-            allow(to)
-          }
+        for (const right of [-1, 1]) {
+          const to = forwardTo.right(right)
+          if (this.at(to)?.color === opponent) allowPawn(to)
         }
-        allowCapture(forwardTo.right(-1))
-        allowCapture(forwardTo.right(1))
         break
       case PieceType.N:
+        // a knight moves 1 in one direction and 2 in the other to non-friendly
+        for (const [fileAbs, rankAbs] of [[1, 2], [2, 1]]) {
+          for (const fileSign of [-1, 1]) {
+            for (const rankSign of [-1, 1]) {
+              const to = from.right(fileSign*fileAbs).up(rankSign*rankAbs)
+              if (this.at(to)?.color !== friendly) {
+                allow(to)
+              }
+            }
+          }
+        }
+      case PieceType.B:
+        allowBishop()
+      case PieceType.R:
+        // (note: the castling flags are reset in _withCastle after each move)
+        allowRook()
+      case PieceType.Q:
+        allowBishop()
+        allowRook()
+      case PieceType.K:
+        // (note: the castling flags are reset in _withCastle after each move)
+        // a king can move one in all 8 directions
+        for (const dFile of [-1, 0, 1]) {
+          for (const dRank of [-1, 0, 1]) {
+            // no moving in place
+            if (dFile || dRank) {
+              allow(from.right(dFile).up(dRank))
+            }
+          }
+        }
+        // can castle by moving two files while the correct flag is still `true`
+        const pairs: [number, 'OOO' | 'OO'][] = [[-2, 'OOO'], [2, 'OO']]
+        for (const [dFile, side] of pairs) {
+          if (this.canCastle[`${isWhite ? 'w' : 'b'}${side}`]) {
+            allow(from.right(dFile))
+          }
+        }
     }
     return moves
+  }
+
+  /** Legal moves for the current player from this coordinate */
+  legalMovesFrom(coord: Coord): Move[] {
+    // we need to filter out moves that allow current player's king to be captured
+    return this._illegalMovesFrom(coord).filter(move => {
+      const future = this._illegalAfterMove(move)  // hypothetical future after this move
+      return future.friendlyCoords()  // coordinates of enemy pieces
+        .flatMap(coord => future._illegalMovesFrom(coord))  // moves enemy pieces can make
+        .filter(move => {
+          const piece = future.at(move.to)  // piece that is target of enemy move
+          // is this move attacking the *current* player's king?
+          return piece?.color === this.turnColor && piece?.type === PieceType.K
+        }).length === 0
+    })
   }
 
   /** Can the current player make this move? */
@@ -270,24 +366,28 @@ class Chess {
     return this.legalMovesFrom(move.from).filter(move.is.bind(move)).length > 0
   }
 
+  /** Is this move missing a `promotesTo` field to be legal? */
   doesNeedPromotion(move: Move): boolean {
     const oppositeRank = this.turnColor === PieceColor.White ? Rank.R8 : Rank.R1
     return this.at(move.from)?.type === PieceType.P && move.to.rank === oppositeRank
   }
 
-  /** The game after `move` is played, or `null` if the move is illegal. */
-  afterMove(move: Move): Chess | null {
-    if (!this.canMove(move)) return null
+  /** The game after `move` is played, allowing moves that put the king in check. */  
+  _illegalAfterMove(move: Move): Chess {
     const { from, to, promotesTo } = move
     // if promoting, use the new piece type
     const piece = promotesTo ? { color: this.turnColor, type: promotesTo } : this.at(from)
     return this
-      ._withCapturedEnPassant(move)  // if en passant, also delete captured pawn
-      ._withCanEnPassant(move)  // update en passant record
-      ._withCastle(move)  // also move rook and update flags if castle
+      ._withEnPassant(move)  // handle en passant capture and record
+      ._withCastle(move)  // move rook if castle, update castle flags
       ._withAt(from, null)  // remove piece in old square
       ._withAt(to, piece)  // overwrite piece into new square
-      ._withPass()
+      ._withPass()  // pass to next player
+  }
+
+  /** The game after `move` is played, or `null` if the move is illegal. */
+  afterMove(move: Move): Chess | null {
+    return this.canMove(move) ? this._illegalAfterMove(move) : null
   }
 }
 
