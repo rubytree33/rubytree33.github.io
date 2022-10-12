@@ -43,7 +43,7 @@ interface Chess {
   /** Which player's turn it is */
   turnColor: PieceColor
   /** Coordinate of a pawn which can be captured en passant */
-  enPassantTo: null | Coord
+  canEnPassant: null | Coord
   /** Whether or not each player can castle and in each direction.
     * OOO = queenside (toward lower files).
     * OO = kingside (toward higher files). */
@@ -60,7 +60,7 @@ interface Chess {
 function newChess(): Chess {
   return {
     turnColor: PieceColor.White,
-    enPassantTo: null,
+    canEnPassant: null,
     canCastle: {
       wOOO: true,
       wOO: true,
@@ -129,12 +129,12 @@ function _withEnPassant(game: Chess, move: Move): Chess {
   const forward = game.turnColor === PieceColor.White ? 1 : -1
   const behind = up(to, -forward)
   // the move was en passant only if it is a pawn and was moving behind the en passant square
-  const isEnPassant = at(game, from)?.type === PieceType.P && _.isEqual(game.enPassantTo, behind)
+  const isEnPassant = at(game, from)?.type === PieceType.P && _.isEqual(game.canEnPassant, behind)
   // if it happens, delete the enemy pawn behind the pawn
   const withCaptured = isEnPassant ? _withAt(game, behind, null) : game
   return produce(withCaptured, draft => {
     // pawn can be captured en passant only if it moved two squares (only possibly in rank)
-    draft.enPassantTo =
+    draft.canEnPassant =
       at(game, from)?.type === PieceType.P && Math.abs(from.rank - to.rank) === 2
         ? to : null
   })
@@ -209,9 +209,9 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
   const friendly = game.turnColor
   const isWhite = friendly === PieceColor.White
   const opponent = isWhite ? PieceColor.Black : PieceColor.White
-  /** Add a legal move to the result, ignoring out of bounds */
+  /** Add a legal move to the result, ignoring out of bounds and self-capture */
   const allow = (to: Coord): void => {
-    if (isInBounds(to)) {
+    if (isInBounds(to) && at(game, to)?.color !== friendly) {
       moves.push({ from, to })
     }
   }
@@ -221,10 +221,8 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
     do {
       to = plus(to, heading)
       // move into empty squares or capture the enemy if this is the last one
-      if (at(game, to)?.color !== friendly) {
-        allow(to)
-      }
-    } while (at(game, to)?.color === null)
+      allow(to)
+    } while (isInBounds(to) && at(game, to) === null)
   }
   /** Add "bishop moves" (diagonal) */
   const allowBishop = (): void => {
@@ -251,7 +249,7 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
       // the rank the pawn promotes at
       const promotingRank = isWhite ? Rank.R8 : Rank.R1
       // the direction the pawn moves, relative to up
-      const step = isWhite ? 1 : -1
+      const forward = isWhite ? 1 : -1
       const allowPawn = (to: Coord): void => {
         // augment the moves we add with promotion options if they are on the promoting rank
         if (to.rank !== promotingRank) {
@@ -263,17 +261,17 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
       }
       // if on home square allow moving two spaces
       if (from.rank === homeRank) {
-        allowPawn(up(from, 2*step))
+        allowPawn(up(from, 2*forward))
       }
-      // we can en passant if our pawn can capture forward into it
-      const enPassantTo = game.enPassantTo
-      if (enPassantTo
-          && Math.abs(from.file - enPassantTo.file) === 1
-          && from.rank + step === enPassantTo.rank) {
-        allowPawn(enPassantTo)
+      // we can en passant if our pawn is next to the pawn that can be captured en passant
+      const canEnPassant = game.canEnPassant
+      if (canEnPassant
+          && Math.abs(from.file - canEnPassant.file) === 1
+          && from.rank === canEnPassant.rank) {
+        allowPawn(up(canEnPassant, forward))
       }
       // if forward space is clear, allow move
-      const forwardTo = up(from, step)
+      const forwardTo = up(from, forward)
       if (!at(game, forwardTo)) {
         allowPawn(forwardTo)
       }
@@ -295,14 +293,18 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
           }
         }
       }
+      break
     case PieceType.B:
       allowBishop()
+      break
     case PieceType.R:
       // (note: the castling flags are reset in _withCastle after each move)
       allowRook()
+      break
     case PieceType.Q:
       allowBishop()
       allowRook()
+      break
     case PieceType.K:
       // (note: the castling flags are reset in _withCastle after each move)
       // a king can move one in all 8 directions
@@ -321,20 +323,21 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
           allow(right(from, dFile))
         }
       }
+      break
   }
   return moves
 }
 
 /** Legal moves for the current player from this coordinate */
 function legalMovesFrom(game: Chess, coord: Coord): Move[] {
-  // we need to filter out moves that allow current player's king to be captured
+  // we need to filter out moves that would allow current player's king to be captured
   return _illegalMovesFrom(game, coord).filter(move => {
     const future = _illegalAfterMove(game, move)  // hypothetical future after this move
     return friendlyCoords(future)  // coordinates of enemy pieces
       .flatMap(coord => _illegalMovesFrom(future, coord))  // moves enemy pieces can make
       .filter(move => {
         const piece = at(future, move.to)  // piece that is target of enemy move
-        // is this move attacking the *current* player's king?
+        // would this move capture the *current* player's king?
         return piece?.color === game.turnColor && piece?.type === PieceType.K
       }).length === 0
   })
@@ -371,5 +374,5 @@ function afterMove(game: Chess, move: Move): Chess | null {
 }
 
 export type { Coord, Move, Chess }
-export { PieceColor, PieceType, newChess, canMove, afterMove, doesNeedPromotion }
+export { PieceColor, PieceType, newChess, legalMovesFrom, canMove, afterMove, doesNeedPromotion }
 export const pieceAt = at
