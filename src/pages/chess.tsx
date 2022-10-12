@@ -27,7 +27,7 @@ const Page: NextPage = () => {
     className?: string,
   }
 
-  const Square = ({ key, file, rank, className }: SquareProps) => {
+  const Square = ({ file, rank, className }: SquareProps) => {
     if (file === undefined || rank === undefined) {
       console.error('Cannot render <Square /> without file/rank')
       return <></>
@@ -39,7 +39,7 @@ const Page: NextPage = () => {
     const isSelected = file === selection?.file && rank === selection?.rank
 
     return <>
-      <button key={key} className={`
+      <button key={file} className={`
           ${className}
           rounded-md
           ${(file + rank) % 2 == Number(isA1Dark) ? 'bg-ruby-400' : 'bg-ruby-700'}
