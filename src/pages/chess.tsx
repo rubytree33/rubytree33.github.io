@@ -5,6 +5,7 @@ import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { selectSquare, deselectSquare } from '../features/chess/chess-slice'
+import { Coord, pieceAt, legalMovesFrom } from '../features/chess/chess'
 
 const ViewportCentered = ({ children, onClick }: any) =>
   <div className="absolute left-0 top-0">
@@ -17,26 +18,23 @@ const ViewportCentered = ({ children, onClick }: any) =>
 
 const Page: NextPage = () => {
   const dispatch = useAppDispatch()
-  const selection = useAppSelector(state => state.chess.selection)
-  const board = useAppSelector(state => state.chess.game.board)
+  const chess = useAppSelector(state => state.chess)
+  const game = chess.game
+  const selection: Coord | null = chess.selection
+  const targeted: Coord[] = selection ? legalMovesFrom(game, selection).map(move => move.to) : []
 
   interface SquareProps {
-    key?: number,
-    file?: number,
-    rank?: number,
+    coord: Coord,
     className?: string,
   }
 
-  const Square = ({ file, rank, className }: SquareProps) => {
-    if (file === undefined || rank === undefined) {
-      console.error('Cannot render <Square /> without file/rank')
-      return <></>
-    }
+  const Square = ({ coord, className }: SquareProps) => {
+    const { file, rank } = coord
+    const piece = pieceAt(game, coord)
+    const isSelected = _.isEqual(coord, selection)
+    const isTargeted = targeted.filter(x => _.isEqual(coord, x)).length > 0
 
-    const isA1Dark = true
-
-    const piece = board[file][rank]
-    const isSelected = file === selection?.file && rank === selection?.rank
+    const isA1Dark = true  // how chess boards look
 
     return <>
       <button key={file} className={`
@@ -49,17 +47,22 @@ const Page: NextPage = () => {
         `}
         onClick={e => {
           e.stopPropagation()
-          dispatch(selectSquare({ file, rank }))
+          dispatch(!selection || isTargeted ? selectSquare(coord) : deselectSquare())
         }}
       >
+        {/* targeted background */}
+        {isTargeted && <div className={`
+          absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+          w-1/2 h-1/2 rounded-full
+          bg-blue-500
+        `} />}
         {/* piece */}
         {piece && <div className={`
-            absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-            text-3xl font-bold
-            ${['text-ruby-50', 'text-ruby-950'][piece.color]}
-            ${isSelected && 'animate-pulse'}
-          `}
-        >
+          absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
+          text-3xl font-bold
+          ${['text-ruby-50', 'text-ruby-950'][piece.color]}
+          ${isSelected && 'animate-pulse'}
+        `}>
           {'PNBRQK'[piece.type]}
         </div>}
         {/* coordinate */}
@@ -91,7 +94,7 @@ const Page: NextPage = () => {
         {_.range(8).map(rank =>
           <div key={rank} className="grow basis-1/8 flex flex-row">
             {_.range(8).map (file =>
-              <Square key={file} file={file} rank={rank} className='grow basis-1/8' />
+              <Square key={file} coord={{ file, rank }} className='grow basis-1/8' />
             )}
           </div>
         )}
