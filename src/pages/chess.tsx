@@ -53,8 +53,8 @@ const Page: NextPage = () => {
         {/* targeted background */}
         {isTargeted && <div className={`
           absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-          w-1/2 h-1/2 rounded-full
-          bg-blue-500
+          w-2/3 h-2/3 rounded-full
+          border-4 border-ruby-50/50
         `} />}
         {/* piece */}
         {piece && <div className={`
