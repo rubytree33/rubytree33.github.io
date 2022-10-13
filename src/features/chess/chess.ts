@@ -9,12 +9,12 @@ interface Coord {
   rank: Rank
 }
 
-function up(coord: Coord, offset: number): Coord {
-  return { file: coord.file, rank: coord.rank + offset }
+function up(coord: Coord, dRank: number): Coord {
+  return { file: coord.file, rank: coord.rank + dRank }
 }
 
-function right(coord: Coord, offset: number): Coord {
-  return { file: coord.file + offset, rank: coord.rank }
+function right(coord: Coord, dFile: number): Coord {
+  return { file: coord.file + dFile, rank: coord.rank }
 }
 
 function plus(coord: Coord, other: Coord): Coord {
@@ -147,8 +147,9 @@ function _withCastle(game: Chess, move: Move): Chess {
   const { from, to } = move
   const piece = at(game, from)
   const type = piece?.type
-  const homeRank = game.turnColor === PieceColor.White ? Rank.R1 : Rank.R8
-  const castleColor = game.turnColor === PieceColor.White ? 'w' : 'b'
+  const isWhite = game.turnColor === PieceColor.White
+  const homeRank = isWhite ? Rank.R1 : Rank.R8
+  const castleColor = isWhite ? 'w' : 'b'
   return produce(game, draft => {
     function disableQueenside() { draft.canCastle[`${castleColor}OOO`] = false }
     function disableKingside () { draft.canCastle[`${castleColor}OO`]  = false }
@@ -170,21 +171,19 @@ function _withCastle(game: Chess, move: Move): Chess {
       // A normal king move, or a castle
       case PieceType.K:
         // If a king moves (including castling), disable castling for both sides
-        if (type === PieceType.K) {
-          disableQueenside()
-          disableKingside()
-        }
+        disableQueenside()
+        disableKingside()
         // We only need to move the rook if this is a castle
         // This is a castle if the main piece is a king and they move two files
-        const isCastle = type === PieceType.K && Math.abs(from.file - to.file) === 2
+        const isCastle = Math.abs(from.file - to.file) === 2
         if (!isCastle) break
         // The direction of castling determines which rook moves and where
         // King moves to file c (queenside): the rook on file a moves to file d
         // King moves to file g (kingside):  the rook on file h moves to file f
         const rookFileFrom = to.file === File.Fc ? File.Fa : File.Fh
         const rookFileTo   = to.file === File.Fc ? File.Fd : File.Ff
-        draft.board[homeRank][rookFileFrom] = null
-        draft.board[homeRank][rookFileTo] = piece
+        draft.board[rookFileFrom][homeRank] = null
+        draft.board[rookFileTo][homeRank] = { color: game.turnColor, type: PieceType.R }
         break
       default:
         // nothing else affects whether or not we can castle
@@ -250,7 +249,7 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
       const promotingRank = isWhite ? Rank.R8 : Rank.R1
       // the direction the pawn moves, relative to up
       const forward = isWhite ? 1 : -1
-      const allowPawn = (to: Coord): void => {
+      const pawnAllow = (to: Coord): void => {
         // augment the moves we add with promotion options if they are on the promoting rank
         if (to.rank !== promotingRank) {
           allow(to)
@@ -261,24 +260,24 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
       }
       // if on home square allow moving two spaces
       if (from.rank === homeRank) {
-        allowPawn(up(from, 2*forward))
+        pawnAllow(up(from, 2*forward))
       }
       // we can en passant if our pawn is next to the pawn that can be captured en passant
       const canEnPassant = game.canEnPassant
       if (canEnPassant
           && Math.abs(from.file - canEnPassant.file) === 1
           && from.rank === canEnPassant.rank) {
-        allowPawn(up(canEnPassant, forward))
+        pawnAllow(up(canEnPassant, forward))
       }
       // if forward space is clear, allow move
       const forwardTo = up(from, forward)
       if (!at(game, forwardTo)) {
-        allowPawn(forwardTo)
+        pawnAllow(forwardTo)
       }
       // if diagonal step either way is occupied by enemy, allow capture
       for (const dFile of [-1, 1]) {
         const to = right(forwardTo, dFile)
-        if (at(game, to)?.color === opponent) allowPawn(to)
+        if (at(game, to)?.color === opponent) pawnAllow(to)
       }
       break
     case PieceType.N:
@@ -298,7 +297,7 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
       allowBishop()
       break
     case PieceType.R:
-      // (note: the castling flags are reset in _withCastle after each move)
+      // (note: the castling flags are reset in _withCastle on each move)
       allowRook()
       break
     case PieceType.Q:
@@ -306,7 +305,7 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
       allowRook()
       break
     case PieceType.K:
-      // (note: the castling flags are reset in _withCastle after each move)
+      // (note: the castling flags are reset in _withCastle on each move)
       // a king can move one in all 8 directions
       for (const dFile of [-1, 0, 1]) {
         for (const dRank of [-1, 0, 1]) {
@@ -332,14 +331,11 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
 function legalMovesFrom(game: Chess, coord: Coord): Move[] {
   // we need to filter out moves that would allow current player's king to be captured
   return _illegalMovesFrom(game, coord).filter(move => {
+    const kingCoord: Coord = friendlyCoords(game).filter(coord => at(game, coord)?.type === PieceType.K)[0]
     const future = _illegalAfterMove(game, move)  // hypothetical future after this move
     return friendlyCoords(future)  // coordinates of enemy pieces
       .flatMap(coord => _illegalMovesFrom(future, coord))  // moves enemy pieces can make
-      .filter(move => {
-        const piece = at(future, move.to)  // piece that is target of enemy move
-        // would this move capture the *current* player's king?
-        return piece?.color === game.turnColor && piece?.type === PieceType.K
-      }).length === 0
+      .filter(move => _.isEqual(move.to, kingCoord)).length === 0
   })
 }
 
