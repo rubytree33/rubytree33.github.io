@@ -1,5 +1,6 @@
 import _ from 'lodash'
-import { produce, immerable } from 'immer'
+import { produce } from 'immer'
+import { freeze } from '@reduxjs/toolkit'
 
 const enum Rank { R1 = 0, R2, R3, R4, R5, R6, R7, R8 }
 const enum File { Fa = 0, Fb, Fc, Fd, Fe, Ff, Fg, Fh }
@@ -39,6 +40,8 @@ interface Move {
   promotesTo?: PieceType
 }
 
+const enum GameResult { WhiteWins, BlackWins, Stalemate }
+
 interface Chess {
   /** Which player's turn it is */
   turnColor: PieceColor
@@ -53,6 +56,7 @@ interface Chess {
     bOOO: boolean
     bOO: boolean
   }
+  gameResult: null | GameResult
   /** 8x8 array of arrays of contents of squares on the board */
   board: P[][]
 }
@@ -67,6 +71,7 @@ function newChess(): Chess {
       bOOO: true,
       bOO: true,
     },
+    gameResult: null,
     board: _.range(8).map(file =>
       _.range(8).map(rank => {
         // rank 3-6 empty
@@ -192,19 +197,50 @@ function _withCastle(game: Chess, move: Move): Chess {
   })
 }
 
-/** The board as is, but on the next turn, as if the turn was passed.
- *  Not a legal move in standard chess, but can be used to complete turns in a functional style.
- */
+function kingCoord(game: Chess): Coord {
+  // in valid game states there will always be a king for each player
+  return friendlyCoords(game).filter(c => at(game, c)?.type === PieceType.K)[0]
+}
+
+function isInCheck(game: Chess): boolean {
+  return isAttacked(game, kingCoord(game))
+}
+
+/** The board as is, with the turn passed to the next player */
 function _withPass(game: Chess): Chess {
+  const wasWhite = game.turnColor === PieceColor.White
   return produce(game, draft => {
-    draft.turnColor = draft.turnColor === PieceColor.White ? PieceColor.Black : PieceColor.White
+    draft.turnColor = wasWhite ? PieceColor.Black : PieceColor.White
   })
+}
+
+/** The board as is, with the game result updated */
+function _withUpdateResult(game: Chess): Chess {
+  console.error('Game result not yet implemented')
+  return game
+  const isWhite = game.turnColor === PieceColor.White
+  const canMoveAnything = legalMoves(game).length > 0
+  const isCheck = isInCheck(game)
+  return { ...game,
+    gameResult: !canMoveAnything ? (isCheck
+        ? isWhite ? GameResult.BlackWins : GameResult.WhiteWins  // was checkmated by opponent
+        : GameResult.Stalemate  // no moves but no check, so draw
+      ) : null  // game continues
+  }
+}
+
+interface MovesOpts {
+  /** A flag to set when performing the recursive check for castling moves, since castles can't capture */
+  disallowCastling?: boolean
 }
 
 /** Legal moves from the current position plus moves that put the player's king in check. */
 // (defined separately to prevent infinite mutual recursion in move finding)
-function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
-  let moves: Move[] = []
+function _illegalMovesFrom(game: Chess, from: Coord, { disallowCastling }: MovesOpts = {}): Move[] {
+  // no moves are possible if the game is over
+  if (game.gameResult) return []
+
+  const moves: Move[] = []
   const friendly = game.turnColor
   const isWhite = friendly === PieceColor.White
   const opponent = isWhite ? PieceColor.Black : PieceColor.White
@@ -250,13 +286,14 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
       // the direction the pawn moves, relative to up
       const forward = isWhite ? 1 : -1
       const pawnAllow = (to: Coord): void => {
-        // augment the moves we add with promotion options if they are on the promoting rank
-        if (to.rank !== promotingRank) {
+        // augment the moves we add with promotion options only if they are on the promoting rank
+        if (to.rank === promotingRank) {
+          [PieceType.N, PieceType.B, PieceType.R, PieceType.Q].map(promotesTo => {
+            moves.push({ from, to, promotesTo })
+          })
+        } else {
           allow(to)
         }
-        [PieceType.N, PieceType.B, PieceType.R, PieceType.Q].map(promotesTo => {
-          moves.push({ from, to, promotesTo })
-        })
       }
       // if on home square allow moving two spaces
       if (from.rank === homeRank) {
@@ -316,10 +353,14 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
         }
       }
       // can castle by moving two files while the correct flag is still `true`
-      const pairs: [number, 'OOO' | 'OO'][] = [[-2, 'OOO'], [2, 'OO']]
-      for (const [dFile, side] of pairs) {
-        if (game.canCastle[`${isWhite ? 'w' : 'b'}${side}`]) {
-          allow(right(from, dFile))
+      // and the king and the square they pass through aren't attacked
+      if (disallowCastling) break
+      const pairs: [number, 'OOO' | 'OO'][] = [[-1, 'OOO'], [1, 'OO']]
+      for (const [fileSign, side] of pairs) {
+        if (game.canCastle[`${isWhite ? 'w' : 'b'}${side}`]
+            && !isAttacked(game, from)
+            && !isAttacked(game, right(from, fileSign))) {
+          allow(right(from, fileSign*2))
         }
       }
       break
@@ -327,17 +368,32 @@ function _illegalMovesFrom(game: Chess, from: Coord): Move[] {
   return moves
 }
 
+function _illegalMoves(game: Chess, opts: MovesOpts = {}): Move[] {
+  return friendlyCoords(game).flatMap(coord => _illegalMovesFrom(game, coord, opts))
+}
+
 /** Legal moves for the current player from this coordinate */
 function legalMovesFrom(game: Chess, coord: Coord): Move[] {
-  // we need to filter out moves that would allow current player's king to be captured
-  return _illegalMovesFrom(game, coord).filter(move => {
-    const kingCoord: Coord = friendlyCoords(game).filter(coord => at(game, coord)?.type === PieceType.K)[0]
-    const future = _illegalAfterMove(game, move)  // hypothetical future after this move
-    return friendlyCoords(future)  // coordinates of enemy pieces
-      .flatMap(coord => _illegalMovesFrom(future, coord))  // moves enemy pieces can make
-      .filter(move => _.isEqual(move.to, kingCoord)).length === 0
-  })
+  // we need to filter out moves that put the current player in check
+  const king: Coord = kingCoord(game)
+  return _illegalMovesFrom(game, coord).filter(move =>
+    _illegalMoves(_illegalAfterMove(game, move))  // attacks of the opponent
+      .filter(move => _.isEqual(move.to, king)).length === 0
+  )
 }
+
+function legalMoves(game: Chess): Move[] {
+  return friendlyCoords(game).flatMap(coord => legalMovesFrom(game, coord))
+}
+
+function attackedCoords(game: Chess): Coord[] {
+  return _illegalMoves(game, { disallowCastling: true }).map(move => move.to)
+}
+
+function isAttacked(game: Chess, coord: Coord): boolean {
+  return attackedCoords(game).filter(c => _.isEqual(c, coord)).length > 0
+}
+
 
 /** Can the current player make this move? */
 function canMove(game: Chess, move: Move): boolean {
@@ -350,8 +406,12 @@ function doesNeedPromotion(game: Chess, move: Move): boolean {
   return at(game, move.from)?.type === PieceType.P && move.to.rank === oppositeRank
 }
 
-/** The game after `move` is played, allowing moves that put the king in check. */  
-function _illegalAfterMove(game: Chess, move: Move): Chess {
+interface AfterMoveOpts {
+  doesUpdateResult?: boolean
+}
+
+/** The game after `move` is played, allowing moves that put the king in check and without updating the game result. */  
+function _illegalAfterMove(game: Chess, move: Move, { doesUpdateResult }: AfterMoveOpts = {}): Chess {
   const { from, to, promotesTo } = move
   // if promoting, use the new piece type
   const piece = promotesTo ? { color: game.turnColor, type: promotesTo } : at(game, from)
@@ -360,13 +420,14 @@ function _illegalAfterMove(game: Chess, move: Move): Chess {
     _.partialRight(_withCastle, move),  // move rook if castle, update castle flags
     _.partialRight(_withAt, from, null),  // remove piece in old square
     _.partialRight(_withAt, to, piece),  // overwrite piece into new square
-    _.partialRight(_withPass)  // pass to next player
+    _.partialRight(_withPass),  // pass to next player
+    _.partialRight(doesUpdateResult ? _withUpdateResult : (x: Chess) => x)
   )(game)
 }
 
 /** The game after `move` is played, or `null` if the move is illegal. */
 function afterMove(game: Chess, move: Move): Chess | null {
-  return canMove(game, move) ? _illegalAfterMove(game, move) : null
+  return canMove(game, move) ? _illegalAfterMove(game, move, { doesUpdateResult: true }) : null
 }
 
 export type { Coord, Move, Chess }

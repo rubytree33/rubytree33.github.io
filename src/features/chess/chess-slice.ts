@@ -1,7 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit'
-import { immerable } from 'immer'
 import _ from 'lodash'
-import { Coord, Move, Chess, PieceColor, PieceType, newChess, pieceAt, canMove, afterMove, doesNeedPromotion } from './chess'
+import { Coord, Move, Chess, PieceType, newChess, pieceAt, canMove, afterMove, doesNeedPromotion } from './chess'
 
 interface ChessState {
   /** The coordinate of the selected piece if there is one */
@@ -61,7 +60,7 @@ const chessSlice = createSlice({
   initialState,
   reducers: {
     deselectSquare(state) {
-      deselect(state, )
+      deselect(state)
     },
 
     selectSquare(state, action: PayloadAction<Coord>) {
