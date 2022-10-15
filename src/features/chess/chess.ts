@@ -216,10 +216,9 @@ function _withPass(game: Chess): Chess {
 
 /** The board as is, with the game result updated */
 function _withUpdateResult(game: Chess): Chess {
-  console.error('Game result not yet implemented')
-  return game
   const isWhite = game.turnColor === PieceColor.White
-  const canMoveAnything = legalMoves(game).length > 0
+  // deep cloning here prevents an ugly immer issue with revoked proxies
+  const canMoveAnything = legalMoves(_.cloneDeep(game)).length > 0
   const isCheck = isInCheck(game)
   return { ...game,
     gameResult: !canMoveAnything ? (isCheck
