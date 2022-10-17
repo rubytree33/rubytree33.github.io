@@ -216,9 +216,10 @@ function _withPass(game: Chess): Chess {
 
 /** The board as is, with the game result updated */
 function _withUpdateResult(game: Chess): Chess {
-  const isWhite = game.turnColor === PieceColor.White
   // deep cloning here prevents an ugly immer issue with revoked proxies
-  const canMoveAnything = legalMoves(_.cloneDeep(game)).length > 0
+  game = _.cloneDeep(game)
+  const isWhite = game.turnColor === PieceColor.White
+  const canMoveAnything = legalMoves(game).length > 0
   const isCheck = isInCheck(game)
   return { ...game,
     gameResult: !canMoveAnything ? (isCheck
@@ -374,12 +375,8 @@ function _illegalMoves(game: Chess, opts: MovesOpts = {}): Move[] {
 
 /** Legal moves for the current player from this coordinate */
 function legalMovesFrom(game: Chess, coord: Coord): Move[] {
-  // we need to filter out moves that put the current player in check
-  const king: Coord = kingCoord(game)
-  return _illegalMovesFrom(game, coord).filter(move =>
-    _illegalMoves(_illegalAfterMove(game, move))  // attacks of the opponent
-      .filter(move => _.isEqual(move.to, king)).length === 0
-  )
+  // we need to filter out moves that will put the current player in check
+  return _illegalMovesFrom(game, coord).filter(move => !isInCheck(_withPass(_illegalAfterMove(game, move))))
 }
 
 function legalMoves(game: Chess): Move[] {
@@ -387,7 +384,7 @@ function legalMoves(game: Chess): Move[] {
 }
 
 function attackedCoords(game: Chess): Coord[] {
-  return _illegalMoves(game, { disallowCastling: true }).map(move => move.to)
+  return _illegalMoves(_withPass(game), { disallowCastling: true }).map(move => move.to)
 }
 
 function isAttacked(game: Chess, coord: Coord): boolean {
