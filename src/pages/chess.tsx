@@ -68,7 +68,7 @@ const Page: NextPage = () => {
         </div>}
         {/* coordinate */}
         <div className='absolute left-1 bottom-0 opacity-50'>
-          {`${'abcdefgh'[file]}${rank}`}
+          {`${'abcdefgh'[file]}${rank+1}`}
         </div>
       </button>
     </>
