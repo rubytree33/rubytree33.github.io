@@ -1,16 +1,16 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
-import { MouseEventHandler, ReactElement } from 'react'
+import { MouseEventHandler, ReactElement, ReactFragment } from 'react'
 import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { selectSquare, deselectSquare } from '../features/chess/chess-slice'
-import { Coord, pieceAt, legalMovesFrom, PieceType, PieceColor } from '../features/chess/chess'
+import { Coord, pieceAt, legalMovesFrom, PieceColor, GameResult } from '../features/chess/chess'
 
 interface Props {
   className?: string,
-  children?: ReactElement,
+  children?: ReactFragment,
   onClick?: MouseEventHandler<HTMLElement>,
 }
 type Component = (props: Props) => ReactElement
@@ -62,9 +62,14 @@ const Page: NextPage = () => {
         `} />}
         {/* piece */}
         {piece && <div className={`
+          transition-all
           font-chess text-7xl
           absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-          ${['text-ruby-50', 'text-ruby-950'][piece.color]}
+          ${(game.gameResult === GameResult.Stalemate
+              || game.gameResult === GameResult.WhiteWins && piece.color === PieceColor.Black
+              || game.gameResult === GameResult.BlackWins && piece.color === PieceColor.White
+            ? ['text-gray-400 grayscale', 'text-gray-700 grayscale']
+            : ['text-ruby-50', 'text-ruby-950'])[piece.color]}
           ${isSelected && 'animate-pulse'}
         `}>
           { // ♙♘♗♖♕♔♟♞♝♜♛♚ = white,black PNBRQK but we use black only for fill
@@ -95,8 +100,28 @@ const Page: NextPage = () => {
     </Head>
 
     <ViewportCentered onClick={() => dispatch(deselectSquare())} className='shadow-2xl'>
+      <div
+        className={`
+          absolute left-0 w-full
+          transition-all
+          rounded-md ring ring-offset-[12px] ring-ruby-700
+          ${game.gameResult !== null  // if the game has ended
+            ? 'top-0 h-full ' + (game.gameResult === GameResult.WhiteWins
+              ? 'ring-offset-ruby-50'  // white won
+              : game.gameResult === GameResult.BlackWins
+                ? 'ring-offset-ruby-950'  // black won
+                : 'ring-offset-gray-500'  // stalemate
+            )
+            : 'h-1/4 ' + (game.turnColor === PieceColor.White
+              ? 'ring-offset-ruby-50  top-3/4'  // white's turn
+              : 'ring-offset-ruby-950 top-0'  // black's turn
+            )
+          }
+        `}
+      />
       <Squares
         className='
+          relative
           bg-ruby-700 rounded-md ring ring-ruby-700
           w-[100vmin] h-[100vmin]
           portrait:sm:w-[90vmin] portrait:sm:h-[90vmin]

@@ -428,5 +428,5 @@ function afterMove(game: Chess, move: Move): Chess | null {
 }
 
 export type { Coord, Move, Chess }
-export { PieceColor, PieceType, newChess, legalMovesFrom, canMove, afterMove, doesNeedPromotion }
+export { PieceColor, PieceType, GameResult, newChess, legalMovesFrom, canMove, afterMove, doesNeedPromotion }
 export const pieceAt = at
