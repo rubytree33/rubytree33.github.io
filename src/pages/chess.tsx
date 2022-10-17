@@ -58,12 +58,13 @@ const Page: NextPage = () => {
         `} />}
         {/* piece */}
         {piece && <div className={`
+          font-chess text-7xl
           absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-          text-3xl font-bold
           ${['text-ruby-50', 'text-ruby-950'][piece.color]}
           ${isSelected && 'animate-pulse'}
         `}>
-          {'PNBRQK'[piece.type]}
+          { // ♙♘♗♖♕♔♟♞♝♜♛♚ = white,black PNBRQK but we use black only for fill
+          '♟♞♝♜♛♚'[piece.type]}
         </div>}
         {/* coordinate */}
         <div className='absolute left-1 bottom-0 opacity-50'>
