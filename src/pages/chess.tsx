@@ -1,16 +1,24 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 import Link from 'next/link'
+import { MouseEventHandler, ReactElement } from 'react'
 import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { selectSquare, deselectSquare } from '../features/chess/chess-slice'
-import { Coord, pieceAt, legalMovesFrom } from '../features/chess/chess'
+import { Coord, pieceAt, legalMovesFrom, PieceType, PieceColor } from '../features/chess/chess'
 
-const ViewportCentered = ({ children, onClick }: any) =>
+interface Props {
+  className?: string,
+  children?: ReactElement,
+  onClick?: MouseEventHandler<HTMLElement>,
+}
+type Component = (props: Props) => ReactElement
+
+const ViewportCentered: Component = ({ children, onClick, className }) =>
   <div className="absolute left-0 top-0">
     <div className="relative w-screen h-screen" onClick={onClick}>
-      <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+      <div className={`${className} absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`}>
         {children}
       </div>
     </div>
@@ -23,11 +31,7 @@ const Page: NextPage = () => {
   const selection: Coord | null = chess.selection
   const targeted: Coord[] = selection ? legalMovesFrom(game, selection).map(move => move.to) : []
 
-  interface SquareProps {
-    coord: Coord,
-    className?: string,
-  }
-
+  type SquareProps = Props & { coord: Coord }
   const Square = ({ coord, className }: SquareProps) => {
     const { file, rank } = coord
     const piece = pieceAt(game, coord)
@@ -74,32 +78,33 @@ const Page: NextPage = () => {
     </>
   }
 
+  const Squares: Component = ({ className }) =>
+    <div className={`${className} flex flex-col-reverse`}>
+      {_.range(8).map(rank =>
+        <div key={rank} className='grow basis-1/8 flex flex-row'>
+          {_.range(8).map (file =>
+            <Square key={file} coord={{ file, rank }} className='grow basis-1/8' />
+          )}
+        </div>
+      )}
+    </div>
+
   return <>
     <Head>
       <title>rubytree - chess</title>
     </Head>
 
-    <ViewportCentered onClick={() => dispatch(deselectSquare())}>
-      <div className="
-        w-[100vmin] h-[100vmin]
-        portrait:sm:w-[90vmin] portrait:sm:h-[90vmin]
-        portrait:md:w-[75vmin] portrait:md:h-[75vmin]
-        landscape:lg:w-[90vmin] landscape:lg:h-[90vmin]
-        landscape:xl:w-[75vmin] landscape:xl:h-[75vmin]
-        text-ruby-50
-        bg-ruby-700 rounded-md ring ring-ruby-700
-        z-10
-        shadow-2xl
-        flex flex-col-reverse
-      ">
-        {_.range(8).map(rank =>
-          <div key={rank} className="grow basis-1/8 flex flex-row">
-            {_.range(8).map (file =>
-              <Square key={file} coord={{ file, rank }} className='grow basis-1/8' />
-            )}
-          </div>
-        )}
-      </div>
+    <ViewportCentered onClick={() => dispatch(deselectSquare())} className='shadow-2xl'>
+      <Squares
+        className='
+          bg-ruby-700 rounded-md ring ring-ruby-700
+          w-[100vmin] h-[100vmin]
+          portrait:sm:w-[90vmin] portrait:sm:h-[90vmin]
+          portrait:md:w-[75vmin] portrait:md:h-[75vmin]
+          landscape:lg:w-[90vmin] landscape:lg:h-[90vmin]
+          landscape:xl:w-[75vmin] landscape:xl:h-[75vmin]
+        '
+      />
     </ViewportCentered>
 
     <div className='absolute left-3 top-3'>
