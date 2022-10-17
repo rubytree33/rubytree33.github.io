@@ -284,7 +284,10 @@ function _illegalMovesFrom(game: Chess, from: Coord, { disallowCastling }: Moves
       const promotingRank = isWhite ? Rank.R8 : Rank.R1
       // the direction the pawn moves, relative to up
       const forward = isWhite ? 1 : -1
-      const pawnAllow = (to: Coord): void => {
+      const enum MType { Move, Capture, EnPassant }
+      const pawnAllow = (to: Coord, moveType: MType): void => {
+        const target = at(game, to)
+        if (target?.color !== (moveType === MType.Capture ? opponent : undefined)) return
         // augment the moves we add with promotion options only if they are on the promoting rank
         if (to.rank === promotingRank) {
           [PieceType.N, PieceType.B, PieceType.R, PieceType.Q].map(promotesTo => {
@@ -296,24 +299,22 @@ function _illegalMovesFrom(game: Chess, from: Coord, { disallowCastling }: Moves
       }
       // if on home square allow moving two spaces
       if (from.rank === homeRank) {
-        pawnAllow(up(from, 2*forward))
+        pawnAllow(up(from, 2*forward), MType.Move)
       }
       // we can en passant if our pawn is next to the pawn that can be captured en passant
       const canEnPassant = game.canEnPassant
       if (canEnPassant
           && Math.abs(from.file - canEnPassant.file) === 1
           && from.rank === canEnPassant.rank) {
-        pawnAllow(up(canEnPassant, forward))
+        pawnAllow(up(canEnPassant, forward), MType.EnPassant)
       }
       // if forward space is clear, allow move
       const forwardTo = up(from, forward)
-      if (!at(game, forwardTo)) {
-        pawnAllow(forwardTo)
-      }
+      pawnAllow(forwardTo, MType.Move)
       // if diagonal step either way is occupied by enemy, allow capture
       for (const dFile of [-1, 1]) {
         const to = right(forwardTo, dFile)
-        if (at(game, to)?.color === opponent) pawnAllow(to)
+        if (at(game, to)?.color === opponent) pawnAllow(to, MType.Capture)
       }
       break
     case PieceType.N:
