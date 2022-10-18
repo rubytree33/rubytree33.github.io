@@ -30,6 +30,18 @@ const Page: NextPage = () => {
   const game = chess.game
   const selection: Coord | null = chess.selection
   const targeted: Coord[] = selection ? legalMovesFrom(game, selection).map(move => move.to) : []
+  // For some reason this only seems to be detected by Tailwind with twice the necessary coordinates
+  // and only with these specific numbers (16 and 8). Rounding doesn't seem to help.
+  // Probably a Tailwind bug but this is good enough for now so I'll leave it.
+  const textRing =
+    `[text-shadow:_${
+      _.range(16)
+        .map(i => {
+          const rad = Math.PI*2 * i/8  // degree of shadow in radians
+          return [2 * Math.cos(rad), 2 * Math.sin(rad)]  // shadow offset coordinates
+        })
+        .map(([x, y]) => `${x}px_${y}px_var(--tw-shadow-color)`)  // css for each shadow
+    }]`
 
   type SquareProps = Props & { coord: Coord }
   const Square = ({ coord, className }: SquareProps) => {
@@ -37,14 +49,12 @@ const Page: NextPage = () => {
     const piece = pieceAt(game, coord)
     const isSelected = _.isEqual(coord, selection)
     const isTargeted = targeted.filter(x => _.isEqual(coord, x)).length > 0
-
     const isA1Dark = true  // how chess boards look
-
     return <>
       <button key={file} className={`
           ${className}
           rounded-md
-          ${(file + rank) % 2 == Number(isA1Dark) ? 'bg-ruby-400' : 'bg-ruby-700'}
+          ${(file + rank) % 2 === Number(isA1Dark) ? 'bg-ruby-400' : 'bg-ruby-700'}
           hover:brightness-150
           ${isSelected && 'z-20 ring ring-white'}
           relative
@@ -65,11 +75,12 @@ const Page: NextPage = () => {
           transition-all
           font-chess text-7xl
           absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-          ${(game.gameResult === GameResult.Stalemate
+          ${game.gameResult === GameResult.Stalemate
               || game.gameResult === GameResult.WhiteWins && piece.color === PieceColor.Black
               || game.gameResult === GameResult.BlackWins && piece.color === PieceColor.White
-            ? ['text-neutral-400', 'text-neutral-600']
-            : ['text-ruby-50', 'text-ruby-950'])[piece.color]}
+            ? `${textRing} ${['text-neutral-400 shadow-ruby-50', 'text-neutral-600 shadow-ruby-950'][piece.color]}`
+            : `${['text-ruby-50', 'text-ruby-950'][piece.color]}`
+          }
           ${isSelected && 'animate-pulse'}
         `}>
           { // ♙♘♗♖♕♔♟♞♝♜♛♚ = white,black PNBRQK but we use black only for fill
@@ -106,7 +117,7 @@ const Page: NextPage = () => {
           transition-all
           rounded-md ring ring-offset-[12px] ring-ruby-700
           ${game.gameResult !== null  // if the game has ended
-            ? 'top-0 h-full ' + (game.gameResult === GameResult.WhiteWins
+            ? 'top-0 h-full -scale-100 ' + (game.gameResult === GameResult.WhiteWins
               ? 'ring-offset-ruby-50'  // white won
               : game.gameResult === GameResult.BlackWins
                 ? 'ring-offset-ruby-950'  // black won
@@ -120,15 +131,15 @@ const Page: NextPage = () => {
         `}
       />
       <Squares
-        className='
-          relative
+        className={`
+          relative ${''/* set position so the board isn't obstructed by the turn/win indicator */}
           bg-ruby-700 rounded-md ring ring-ruby-700
           w-[100vmin] h-[100vmin]
           portrait:sm:w-[90vmin] portrait:sm:h-[90vmin]
           portrait:md:w-[75vmin] portrait:md:h-[75vmin]
           landscape:lg:w-[90vmin] landscape:lg:h-[90vmin]
           landscape:xl:w-[75vmin] landscape:xl:h-[75vmin]
-        '
+        `}
       />
     </ViewportCentered>
 
