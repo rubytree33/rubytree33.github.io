@@ -60,7 +60,7 @@ const Page: NextPage = () => {
         {piece && <text x='50%' y='62%' dominantBaseline='middle' textAnchor='middle' className={`
           ${className}
           font-chess
-          ${piece.color === turnColor && 'group-hover:opacity-70' /* selectable piece */}
+          ${piece.color === turnColor && !isSelected && 'group-hover:opacity-70' /* selectable piece */}
           ${gameResult === GameResult.Stalemate  // gray (colored outline) all pieces on stalemate
               || gameResult === GameResult.WhiteWins && piece.color === PieceColor.Black  // or losing pieces
               || gameResult === GameResult.BlackWins && piece.color === PieceColor.White
@@ -161,10 +161,11 @@ const Page: NextPage = () => {
     </Head>
 
     <ViewportCentered onClick={() => dispatch(deselectSquare())} className='shadow-2xl'>
+      {/* turn indicator */}
       <div
         className={`
           absolute left-0 w-full
-          transition-all
+          motion-safe:transition-all
           rounded-md ring ring-offset-[12px] ring-ruby-700
           ${gameResult !== null  // if the game has ended
             ? 'top-0 h-full ' + (gameResult === GameResult.WhiteWins
@@ -180,6 +181,7 @@ const Page: NextPage = () => {
           }
         `}
       />
+      {/* chessboard */}
       <Squares
         className={`
           relative ${''/* set position so the board isn't obstructed by the turn/win indicator */}
@@ -193,11 +195,9 @@ const Page: NextPage = () => {
       />
     </ViewportCentered>
 
-    <div className='absolute left-3 top-3'>
-      <Link href='/'>
-        <Logo alt='back' size={48} className='z-50 drop-shadow-sm opacity-30 hover:opacity-100 active:opacity-100' />
-      </Link>
-    </div>
+    <Link href='/' className='absolute left-3 top-3'>
+      <Logo alt='back' size={48} className='z-50 drop-shadow-sm opacity-30 hover:opacity-100 active:opacity-100' />
+    </Link>
   </>
 }
 
