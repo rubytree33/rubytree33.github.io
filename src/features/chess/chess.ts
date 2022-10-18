@@ -427,6 +427,6 @@ function afterMove(game: Chess, move: Move): Chess | null {
   return canMove(game, move) ? _illegalAfterMove(game, move, { doesUpdateResult: true }) : null
 }
 
-export type { Coord, Move, Chess }
+export type { Coord, Move, P, Chess }
 export { PieceColor, PieceType, GameResult, newChess, legalMovesFrom, canMove, afterMove, doesNeedPromotion }
 export const pieceAt = at

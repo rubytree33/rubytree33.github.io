@@ -5,8 +5,8 @@ import { MouseEventHandler, ReactElement, ReactFragment } from 'react'
 import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
-import { selectSquare, deselectSquare } from '../features/chess/chess-slice'
-import { Coord, pieceAt, legalMovesFrom, PieceColor, GameResult } from '../features/chess/chess'
+import { selectSquare, deselectSquare, tryMove } from '../features/chess/chess-slice'
+import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult } from '../features/chess/chess'
 
 interface Props {
   className?: string,
@@ -80,7 +80,13 @@ const Page: NextPage = () => {
         `}
         onClick={e => {
           e.stopPropagation()
-          dispatch(!selection || isTargeted ? selectSquare(coord) : deselectSquare())
+          if (game.gameResult) return  // pieces are is no longer interactable when the game ends
+          if (selection && isTargeted)
+            dispatch(tryMove({ from: selection, to: coord }))  // select move target
+          else if (isSelected)
+            dispatch(deselectSquare())  // cancel move (can't move in place)
+          else if (piece?.color === game.turnColor)
+            dispatch(selectSquare(coord))  // select move origin
         }}
       >
         {/* targeted background */}

@@ -32,20 +32,9 @@ function checkIllegal(state: ChessState, move: Move): boolean {
 
 /** Start an animated move */
 function startMove(state: ChessState, move: Move, onComplete = (()=>{})): void {
+  deselect(state)
   // TODO: implement animation and interface lock; for now the move happens instantly
   state.game = afterMove(state.game, move) || state.game
-}
-
-/** Try to start a move (as an action from the interface) */
-function tryMove(state: ChessState, move: Move): void {
-  if (checkIllegal(state, move)) return
-  // activate promotion interface if promoting move is started
-  if (doesNeedPromotion(state.game, move)) {
-    state.promotionDraft = move
-    return
-  }
-  // immediately begin legal non-promotion moves
-  startMove(state, move)
 }
 
 const initialState: ChessState = {
@@ -64,31 +53,23 @@ const chessSlice = createSlice({
     },
 
     selectSquare(state, action: PayloadAction<Coord>) {
-      const game = state.game
-      const oldSelection = state.selection
-      const newSelection = action.payload
+      state.selection = action.payload
+    },
 
-      // just select a piece if no square is selected
-      if (!oldSelection) {
-        const piece = pieceAt(game, newSelection)
-        // only select pieces of the player whose turn it is
-        if (piece && piece.color === game.turnColor) {
-          state.selection = newSelection
-        }
+    tryMove(state, action: PayloadAction<Move>): void {
+      const move: Move = action.payload
+      if (checkIllegal(state, move)) return
+      // activate promotion interface if promoting move is started
+      if (doesNeedPromotion(state.game, move)) {
+        state.promotionDraft = move
+        return
       }
-      // remove selection if same square is selected
-      else if (_.isEqual(oldSelection, newSelection)) {
-        deselect(state)
-      }
-      // try to move if new square is selected
-      else {
-        tryMove(state, { from: oldSelection, to: newSelection })
-        deselect(state)
-      }
+      // immediately begin legal non-promotion moves
+      startMove(state, move)
     },
 
     /** Interface confirmation of a promoting move, with the new piece type */
-    promote(state, action: PayloadAction<PieceType>) {
+    completePromotion(state, action: PayloadAction<PieceType>) {
       const promotesTo = action.payload
       const move = state.promotionDraft
       if (!move) {
@@ -96,10 +77,9 @@ const chessSlice = createSlice({
         return
       }
       startMove(state, { ...move, promotesTo })
-      deselect(state)
     },
   },
 })
 
-export const { selectSquare, deselectSquare } = chessSlice.actions
+export const { selectSquare, deselectSquare, tryMove } = chessSlice.actions
 export default chessSlice.reducer
