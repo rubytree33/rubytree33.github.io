@@ -51,6 +51,24 @@ const Page: NextPage = () => {
     const isSelected = _.isEqual(coord, selection)
     const isTargeted = targeted.filter(x => _.isEqual(coord, x)).length > 0
     const isDarkSquare = Boolean((file + rank) % 2) === !isA1Dark
+
+    type PieceProps = Props & { piece: P }
+    const Piece = ({ piece }: PieceProps) => {
+      return <svg viewBox={`0 0 17 17`}>
+        {piece && <text x='50%' y='62%' dominantBaseline='middle' textAnchor='middle' className={`
+          font-chess
+          ${game.gameResult === GameResult.Stalemate
+              || game.gameResult === GameResult.WhiteWins && piece.color === PieceColor.Black
+              || game.gameResult === GameResult.BlackWins && piece.color === PieceColor.White
+            ? `${textRing} ${['fill-neutral-400 shadow-ruby-50', 'fill-neutral-600 shadow-ruby-950'][piece.color]}`
+            : `${['fill-ruby-50', 'fill-ruby-950'][piece.color]}`
+          }
+        `}>
+          {'♟♞♝♜♛♚'[piece.type] /* ♙♘♗♖♕♔♟♞♝♜♛♚ = white,black PNBRQK but we use black only for fill */}
+        </text>}
+      </svg>
+    }
+
     return <>
       <button key={file} className={`
           ${className}
@@ -74,21 +92,7 @@ const Page: NextPage = () => {
             : `w-1/2 h-1/2 ${['border-ruby-50/50', 'border-ruby-950/50'][game.turnColor]}`
           }
         `} />}
-        {/* piece */}
-        {piece && <div className={`
-          transition-all
-          font-chess text-7xl
-          absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-          ${game.gameResult === GameResult.Stalemate
-              || game.gameResult === GameResult.WhiteWins && piece.color === PieceColor.Black
-              || game.gameResult === GameResult.BlackWins && piece.color === PieceColor.White
-            ? `${textRing} ${['text-neutral-400 shadow-ruby-50', 'text-neutral-600 shadow-ruby-950'][piece.color]}`
-            : `${['text-ruby-50', 'text-ruby-950'][piece.color]}`
-          }
-        `}>
-          { // ♙♘♗♖♕♔♟♞♝♜♛♚ = white,black PNBRQK but we use black only for fill
-          '♟♞♝♜♛♚'[piece.type]}
-        </div>}
+        <Piece piece={piece} />
         {/* coordinate */}
         <div className={`
           absolute left-1 bottom-0 text-ruby-950 opacity-50
