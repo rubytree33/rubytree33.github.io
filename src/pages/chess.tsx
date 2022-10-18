@@ -68,7 +68,7 @@ const Page: NextPage = () => {
           ${(game.gameResult === GameResult.Stalemate
               || game.gameResult === GameResult.WhiteWins && piece.color === PieceColor.Black
               || game.gameResult === GameResult.BlackWins && piece.color === PieceColor.White
-            ? ['text-gray-400 grayscale', 'text-gray-700 grayscale']
+            ? ['text-neutral-400', 'text-neutral-600']
             : ['text-ruby-50', 'text-ruby-950'])[piece.color]}
           ${isSelected && 'animate-pulse'}
         `}>
@@ -110,7 +110,7 @@ const Page: NextPage = () => {
               ? 'ring-offset-ruby-50'  // white won
               : game.gameResult === GameResult.BlackWins
                 ? 'ring-offset-ruby-950'  // black won
-                : 'ring-offset-gray-500'  // stalemate
+                : 'ring-offset-neutral-500'  // stalemate
             )
             : 'h-1/4 ' + (game.turnColor === PieceColor.White
               ? 'ring-offset-ruby-50  top-3/4'  // white's turn
