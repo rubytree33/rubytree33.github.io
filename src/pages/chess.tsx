@@ -82,7 +82,6 @@ const Page: NextPage = () => {
             ? `${textRing} ${['text-neutral-400 shadow-ruby-50', 'text-neutral-600 shadow-ruby-950'][piece.color]}`
             : `${['text-ruby-50', 'text-ruby-950'][piece.color]}`
           }
-          ${isSelected && 'animate-pulse'}
         `}>
           { // ♙♘♗♖♕♔♟♞♝♜♛♚ = white,black PNBRQK but we use black only for fill
           '♟♞♝♜♛♚'[piece.type]}
