@@ -31,7 +31,7 @@ const Page: NextPage = () => {
   const selection: Coord | null = chess.selection
   const targeted: Coord[] = selection ? legalMovesFrom(game, selection).map(move => move.to) : []
   // For some reason this only seems to be detected by Tailwind with twice the necessary coordinates
-  // and only with these specific numbers (16 and 8). Rounding doesn't seem to help.
+  // and only with these specific numbers (16 and 8 and 2). Rounding doesn't seem to help.
   // Probably a Tailwind bug but this is good enough for now so I'll leave it.
   const textRing =
     `[text-shadow:_${
@@ -44,17 +44,18 @@ const Page: NextPage = () => {
     }]`
 
   type SquareProps = Props & { coord: Coord }
+  const isA1Dark = true  // how chess boards look
   const Square = ({ coord, className }: SquareProps) => {
     const { file, rank } = coord
     const piece = pieceAt(game, coord)
     const isSelected = _.isEqual(coord, selection)
     const isTargeted = targeted.filter(x => _.isEqual(coord, x)).length > 0
-    const isA1Dark = true  // how chess boards look
+    const isDarkSquare = Boolean((file + rank) % 2) === !isA1Dark
     return <>
       <button key={file} className={`
           ${className}
           rounded-md
-          ${(file + rank) % 2 === Number(isA1Dark) ? 'bg-ruby-400' : 'bg-ruby-700'}
+          ${isDarkSquare ? 'bg-ruby-700' : 'bg-ruby-400' }
           hover:brightness-150
           ${isSelected && 'z-20 ring ring-white'}
           relative
@@ -87,7 +88,10 @@ const Page: NextPage = () => {
           '♟♞♝♜♛♚'[piece.type]}
         </div>}
         {/* coordinate */}
-        <div className='absolute left-1 bottom-0 opacity-50'>
+        <div className={`
+          absolute left-1 bottom-0 text-ruby-950 opacity-50
+          ${textRing} ${isDarkSquare ? 'shadow-ruby-700' : 'shadow-ruby-400'}
+        `}>
           {`${'abcdefgh'[file]}${rank+1}`}
         </div>
       </button>
@@ -117,7 +121,7 @@ const Page: NextPage = () => {
           transition-all
           rounded-md ring ring-offset-[12px] ring-ruby-700
           ${game.gameResult !== null  // if the game has ended
-            ? 'top-0 h-full -scale-100 ' + (game.gameResult === GameResult.WhiteWins
+            ? 'top-0 h-full ' + (game.gameResult === GameResult.WhiteWins
               ? 'ring-offset-ruby-50'  // white won
               : game.gameResult === GameResult.BlackWins
                 ? 'ring-offset-ruby-950'  // black won
