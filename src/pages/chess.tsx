@@ -5,13 +5,13 @@ import { MouseEventHandler, ReactElement, ReactFragment } from 'react'
 import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
-import { selectSquare, deselectSquare, tryMove } from '../features/chess/chess-slice'
-import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult } from '../features/chess/chess'
+import { selectSquare, deselectSquare, tryMove, completePromotion } from '../features/chess/chess-slice'
+import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult, PieceType } from '../features/chess/chess'
 
 interface Props {
   className?: string,
   children?: ReactFragment,
-  onClick?: MouseEventHandler<HTMLElement>,
+  onClick?: MouseEventHandler<Element>,
 }
 type Component = (props: Props) => ReactElement
 
@@ -27,8 +27,8 @@ const ViewportCentered: Component = ({ children, onClick, className }) =>
 const Page: NextPage = () => {
   const dispatch = useAppDispatch()
   const chess = useAppSelector(state => state.chess)
-  const game = chess.game
-  const selection: Coord | null = chess.selection
+  const { game, selection, promotionDraft } = chess
+  const { turnColor, gameResult } = game
   const targeted: Coord[] = selection ? legalMovesFrom(game, selection).map(move => move.to) : []
   // For some reason this only seems to be detected by Tailwind with twice the necessary coordinates
   // and only with these specific numbers (16 and 8 and 2). Rounding doesn't seem to help.
@@ -53,13 +53,17 @@ const Page: NextPage = () => {
     const isDarkSquare = Boolean((file + rank) % 2) === !isA1Dark
 
     type PieceProps = Props & { piece: P }
-    const Piece = ({ piece }: PieceProps) => {
-      return <svg viewBox={`0 0 17 17`}>
+    const Piece = ({ piece, className, onClick }: PieceProps) => {
+      return <svg viewBox={`0 0 17 17`} className='group'
+        onClick={onClick}
+      >
         {piece && <text x='50%' y='62%' dominantBaseline='middle' textAnchor='middle' className={`
+          ${className}
           font-chess
-          ${game.gameResult === GameResult.Stalemate
-              || game.gameResult === GameResult.WhiteWins && piece.color === PieceColor.Black
-              || game.gameResult === GameResult.BlackWins && piece.color === PieceColor.White
+          ${piece.color === turnColor && 'group-hover:opacity-70' /* selectable piece */}
+          ${gameResult === GameResult.Stalemate  // gray (colored outline) all pieces on stalemate
+              || gameResult === GameResult.WhiteWins && piece.color === PieceColor.Black  // or losing pieces
+              || gameResult === GameResult.BlackWins && piece.color === PieceColor.White
             ? `${textRing} ${['fill-neutral-400 shadow-ruby-50', 'fill-neutral-600 shadow-ruby-950'][piece.color]}`
             : `${['fill-ruby-50', 'fill-ruby-950'][piece.color]}`
           }
@@ -74,31 +78,35 @@ const Page: NextPage = () => {
           ${className}
           rounded-md
           ${isDarkSquare ? 'bg-ruby-700' : 'bg-ruby-400' }
-          hover:brightness-150
-          ${isSelected && `z-20 ring ${['ring-ruby-50', 'ring-ruby-950'][game.turnColor]}`}
+          ${isSelected && `z-20 ring ${['ring-ruby-50', 'ring-ruby-950'][turnColor]}`}
           relative
         `}
         onClick={e => {
           e.stopPropagation()
-          if (game.gameResult) return  // pieces are is no longer interactable when the game ends
-          if (selection && isTargeted)
-            dispatch(tryMove({ from: selection, to: coord }))  // select move target
-          else if (isSelected)
-            dispatch(deselectSquare())  // cancel move (can't move in place)
-          else if (piece?.color === game.turnColor)
+          if (gameResult) return  // pieces are is no longer interactable when the game ends
+          else if (piece?.color === turnColor && !isSelected)
             dispatch(selectSquare(coord))  // select move origin
+          else if (selection) {
+            if (isTargeted)
+              dispatch(tryMove({ from: selection, to: coord }))  // select move target
+            else if (isSelected || piece?.color !== turnColor)
+              dispatch(deselectSquare())  // cancel move by clicking self/unmovable
+          }
         }}
       >
-        {/* targeted background */}
-        {isTargeted && <div className={`
+        {/* targeted background while selecting target */}
+        {isTargeted && !promotionDraft && <div className={`
           absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
           rounded-full border-4
           ${piece  // is this a capture?
-            ? `w-2/3 h-2/3 ${['border-ruby-50/70', 'border-ruby-950/70'][game.turnColor]}`
-            : `w-1/2 h-1/2 ${['border-ruby-50/50', 'border-ruby-950/50'][game.turnColor]}`
+            ? `w-2/3 h-2/3 ${['border-ruby-50/70', 'border-ruby-950/70'][turnColor]}`
+            : `w-1/2 h-1/2 ${['border-ruby-50/50', 'border-ruby-950/50'][turnColor]}`
           }
         `} />}
-        <Piece piece={piece} />
+        {/* the piece itself */}
+        <Piece piece={piece} className={`
+          ${_.isEqual(coord, promotionDraft?.to) && 'opacity-50' /* fade if promoting into here */}
+        `} />
         {/* coordinate */}
         <div className={`
           absolute left-1 bottom-0 text-ruby-950 opacity-50
@@ -106,6 +114,32 @@ const Page: NextPage = () => {
         `}>
           {`${'abcdefgh'[file]}${rank+1}`}
         </div>
+        {/* promotion options */}
+        {_.isEqual(coord, promotionDraft?.to) &&
+          <div className='
+            absolute left-0 top-0 h-full w-full
+            flex flex-row
+          '>
+            {[0, 1].map(y =>
+              <div key={y} className='flex flex-col'>
+                {[0, 1].map(x => {
+                  const newType = PieceType.N + y + 2*x
+                  return <Piece key={x}
+                    piece={{ color: turnColor, type: newType }}
+                    className={`
+                      ${textRing} ${isDarkSquare ? 'shadow-ruby-700' : 'shadow-ruby-400'}
+                    `}
+                    onClick={e => {
+                      e.stopPropagation()
+                      dispatch(completePromotion(newType))
+                    }}
+                  />
+                }
+                )}
+              </div>
+            )}
+          </div>
+        }
       </button>
     </>
   }
@@ -132,14 +166,14 @@ const Page: NextPage = () => {
           absolute left-0 w-full
           transition-all
           rounded-md ring ring-offset-[12px] ring-ruby-700
-          ${game.gameResult !== null  // if the game has ended
-            ? 'top-0 h-full ' + (game.gameResult === GameResult.WhiteWins
+          ${gameResult !== null  // if the game has ended
+            ? 'top-0 h-full ' + (gameResult === GameResult.WhiteWins
               ? 'ring-offset-ruby-50'  // white won
-              : game.gameResult === GameResult.BlackWins
+              : gameResult === GameResult.BlackWins
                 ? 'ring-offset-ruby-950'  // black won
                 : 'ring-offset-neutral-500'  // stalemate
             )
-            : 'h-1/4 ' + (game.turnColor === PieceColor.White
+            : 'h-1/4 ' + (turnColor === PieceColor.White
               ? 'ring-offset-ruby-50  top-3/4'  // white's turn
               : 'ring-offset-ruby-950 top-0'  // black's turn
             )

@@ -81,5 +81,5 @@ const chessSlice = createSlice({
   },
 })
 
-export const { selectSquare, deselectSquare, tryMove } = chessSlice.actions
+export const { selectSquare, deselectSquare, tryMove, completePromotion } = chessSlice.actions
 export default chessSlice.reducer
