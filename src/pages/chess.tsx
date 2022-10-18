@@ -57,7 +57,7 @@ const Page: NextPage = () => {
           rounded-md
           ${isDarkSquare ? 'bg-ruby-700' : 'bg-ruby-400' }
           hover:brightness-150
-          ${isSelected && 'z-20 ring ring-white'}
+          ${isSelected && `z-20 ring ${['ring-ruby-50', 'ring-ruby-950'][game.turnColor]}`}
           relative
         `}
         onClick={e => {
@@ -68,8 +68,11 @@ const Page: NextPage = () => {
         {/* targeted background */}
         {isTargeted && <div className={`
           absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2
-          w-2/3 h-2/3 rounded-full
-          border-4 border-ruby-50/50
+          rounded-full border-4
+          ${piece  // is this a capture?
+            ? `w-2/3 h-2/3 ${['border-ruby-50/70', 'border-ruby-950/70'][game.turnColor]}`
+            : `w-1/2 h-1/2 ${['border-ruby-50/50', 'border-ruby-950/50'][game.turnColor]}`
+          }
         `} />}
         {/* piece */}
         {piece && <div className={`
