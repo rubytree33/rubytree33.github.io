@@ -58,12 +58,12 @@ const chessSlice = createSlice({
 
     tryMove(state, action: PayloadAction<Move>): void {
       const move: Move = action.payload
-      if (checkIllegal(state, move)) return
       // activate promotion interface if promoting move is started
       if (doesNeedPromotion(state.game, move)) {
         state.promotionDraft = move
         return
       }
+      if (checkIllegal(state, move)) return
       // immediately begin legal non-promotion moves
       startMove(state, move)
     },
