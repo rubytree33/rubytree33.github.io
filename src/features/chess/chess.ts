@@ -1,9 +1,8 @@
 import _ from 'lodash'
 import { produce } from 'immer'
-import { freeze } from '@reduxjs/toolkit'
 
-const enum Rank { R1 = 0, R2, R3, R4, R5, R6, R7, R8 }
 const enum File { Fa = 0, Fb, Fc, Fd, Fe, Ff, Fg, Fh }
+const enum Rank { R1 = 0, R2, R3, R4, R5, R6, R7, R8 }
 
 interface Coord {
   file: File
@@ -428,5 +427,5 @@ function afterMove(game: Chess, move: Move): Chess | null {
 }
 
 export type { Coord, Move, P, Chess }
-export { PieceColor, PieceType, GameResult, newChess, legalMovesFrom, canMove, afterMove, doesNeedPromotion }
+export { File, Rank, PieceColor, PieceType, GameResult, newChess, legalMoves, legalMovesFrom, isInCheck, canMove, afterMove, doesNeedPromotion }
 export const pieceAt = at

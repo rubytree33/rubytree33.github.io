@@ -3,6 +3,7 @@ public/favicon.png
 public/logo.svg
 # don't track blog posts for now
 posts/
+tests/chess-grammar.js
 
 # --- begin Next.js ---
 
