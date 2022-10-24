@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "export": "next export",
+    "export": "next build && next export",
     "build-test": "nearleyc tests/chess-grammar.ne -o tests/chess-grammar.js",
     "test": "jest --watch"
   },

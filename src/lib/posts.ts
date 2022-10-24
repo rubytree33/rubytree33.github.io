@@ -14,7 +14,9 @@ export interface Post {
 }
 
 export const getPostNames = (): string[] =>
-  fs.readdirSync(postsPath).map(filename => filename.replace(/\.md$/, ''))
+  fs.readdirSync(postsPath)
+    .filter(filename => filename.match(/\.md$/))
+    .map(filename => filename.replace(/\.md$/, ''))
 
 export const getPostByName = async (name: string): Promise<Post> => {
   const parsed = matter(fs.readFileSync(path.join(postsPath, `${name}.md`)))
