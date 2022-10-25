@@ -4,6 +4,9 @@ import { produce } from 'immer'
 const enum File { Fa = 0, Fb, Fc, Fd, Fe, Ff, Fg, Fh }
 const enum Rank { R1 = 0, R2, R3, R4, R5, R6, R7, R8 }
 
+const fileString = (file: File): string => 'abcdefgh'[file - File.Fa]
+const rankString = (rank: Rank): string => (rank - Rank.R1 + 1).toString()
+
 interface Coord {
   file: File
   rank: Rank
@@ -19,6 +22,10 @@ function right(coord: Coord, dFile: number): Coord {
 
 function plus(coord: Coord, other: Coord): Coord {
   return { file: coord.file + other.file, rank: coord.rank + other.rank }
+}
+
+function coordString(coord: Coord): string {
+  return fileString(coord.file) + rankString(coord.rank)
 }
 
 const enum PieceColor { White, Black }
@@ -427,5 +434,5 @@ function afterMove(game: Chess, move: Move): Chess | null {
 }
 
 export type { Coord, Move, P, Chess }
-export { File, Rank, PieceColor, PieceType, GameResult, newChess, legalMoves, legalMovesFrom, isInCheck, canMove, afterMove, doesNeedPromotion }
+export { File, Rank, PieceColor, PieceType, GameResult, newChess, legalMoves, legalMovesFrom, isInCheck, canMove, afterMove, doesNeedPromotion, coordString }
 export const pieceAt = at
