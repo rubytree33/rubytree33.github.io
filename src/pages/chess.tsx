@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
-import Head from 'next/head'
 import Link from 'next/link'
 import { MouseEventHandler, ReactElement, ReactFragment } from 'react'
+import Title from '../components/title'
 import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
@@ -214,9 +214,7 @@ const Page: NextPage = () => {
   }
 
   return <>
-    <Head>
-      <title>rubytree - chess</title>
-    </Head>
+    <Title>chess</Title>
 
     <ViewportCentered onClick={() => dispatch(deselectSquare())} className='shadow-2xl'>
       <TurnIndicator />

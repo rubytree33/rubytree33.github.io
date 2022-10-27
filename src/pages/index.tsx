@@ -1,13 +1,11 @@
 import type { NextPage } from 'next'
-import Head from 'next/head'
 import Layout from '../components/layout'
+import Title from '../components/title'
 import Link from 'next/link'
 
 const Home: NextPage = () => (
   <Layout>
-    <Head>
-      <title>rubytree</title>
-    </Head>
+    <Title />
     <div className="mx-auto px-8 max-w-3xl space-y-1">
       <p>
         Thanks for visiting!
