@@ -1,0 +1,11 @@
+@use 'sass:math'
+
+@mixin text-border($r, $color)
+  $shadow: null
+  $C: ceil(2*math.$pi * $r / 1px)
+  @for $i from 0 to $C
+    $shadow: $shadow, $r*math.cos(2*math.$pi * $i/$C * 1rad) $r*math.sin(2*math.$pi * $i/$C * 1rad) $color
+  text-shadow: $shadow
+
+.text-border-2
+  @include text-border(2px, var(--tw-shadow-color))

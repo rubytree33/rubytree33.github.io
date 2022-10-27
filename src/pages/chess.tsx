@@ -7,6 +7,7 @@ import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { selectSquare, deselectSquare, tryMove, completePromotion } from '../features/chess/chess-slice'
 import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult, PieceType, coordString } from '../features/chess/chess'
+import styles from './chess.module.sass'
 
 type OnClick = MouseEventHandler<Element>
 interface Props {
@@ -44,19 +45,7 @@ const Page: NextPage = () => {
 
   const turnWB = _.partial(chooseWB, turnColor)
 
-  // For some reason this only seems to be detected by Tailwind with twice the necessary coordinates
-  // and only with these specific numbers (16 and 8 and 2). Rounding doesn't seem to help.
-  // Probably a Tailwind bug but this is good enough for now so I'll leave it.
-  /** (Tailwind class) Create a 2-pixel ring around text */
-  const textRing2: string =
-    `[text-shadow:_${
-      _.range(16)
-        .map(i => {
-          const rad = Math.PI*2 * i/8  // degree of shadow in radians
-          return [2 * Math.cos(rad), 2 * Math.sin(rad)]  // shadow offset coordinates
-        })
-        .map(([x, y]) => `${x}px_${y}px_var(--tw-shadow-color)`)  // css for each shadow
-    }]`
+  const textBorder2 = styles['text-border-2']
 
   const isA1Dark = true  // how chess boards look
 
@@ -94,7 +83,7 @@ const Page: NextPage = () => {
             'group-hover:opacity-70'}
           ${isStalemate  // gray (colored outline) all pieces on stalemate
               || piece.color === loser  // or losing pieces
-            ? `${textRing2} ${chooseWB(piece.color,
+            ? `${textBorder2} ${chooseWB(piece.color,
               'fill-neutral-400 shadow-ruby-50',
               'fill-neutral-600 shadow-ruby-950')}`
             : `${chooseWB(piece.color, 'fill-ruby-50', 'fill-ruby-950')}`
@@ -124,7 +113,7 @@ const Page: NextPage = () => {
       return (
         <div className={`
           absolute left-1 bottom-0 text-ruby-950 opacity-50
-          ${textRing2} ${isDarkSquare ? 'shadow-ruby-700' : 'shadow-ruby-400'}
+          ${textBorder2} ${isDarkSquare ? 'shadow-ruby-700' : 'shadow-ruby-400'}
         `}>
           {coordString(coord)}
         </div>
@@ -145,7 +134,7 @@ const Page: NextPage = () => {
                   return <Piece key={x}
                     piece={{ color: turnColor, type: newType }}
                     className={`
-                      ${textRing2} ${isDarkSquare ? 'shadow-ruby-700' : 'shadow-ruby-400'}
+                      ${textBorder2} ${isDarkSquare ? 'shadow-ruby-700' : 'shadow-ruby-400'}
                     `}
                     onClick={e => {
                       e.stopPropagation()
