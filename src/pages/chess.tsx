@@ -112,7 +112,7 @@ const Page: NextPage = () => {
     const Coordinate: Component = () => {
       return (
         <div className={`
-          absolute left-1 bottom-0 text-ruby-950 opacity-50
+          absolute left-1 bottom-0 font-display text-ruby-950 opacity-50
           ${textBorder2} ${isDarkSquare ? 'shadow-ruby-700' : 'shadow-ruby-400'}
         `}>
           {coordString(coord)}

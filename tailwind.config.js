@@ -23,7 +23,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'sans': ['"Titillium Web"', ...defaultTheme.fontFamily.sans],
+        'sans': ['"Baloo 2"', ...defaultTheme.fontFamily.sans],
+        'display': ['"Titillium Web"', ...defaultTheme.fontFamily.sans],
         'chess': ['FreeSerif', ...defaultTheme.fontFamily.serif],
       },
       colors: {
