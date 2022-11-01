@@ -13,7 +13,7 @@ const Home: NextPage = () => {
             '>
           <div className='absolute -top-[72px] self-center [&>*]:inline [&>*]:align-middle space-x-4'>
             <Logo size={64} />
-            <span className='font-display text-3xl font-extralight text-ruby-500'>rubytree</span>
+            <span className='font-display text-4xl font-extralight text-ruby-500'>rubytree</span>
           </div>
           <p className='mb-4'>Full-stack open-source web developer.</p>
           <div className='grid grid-flow-row grid-cols-4 [&>a]:text-ruby-500 [&>a:hover]:before:content-["<_"] [&>a:hover]:after:content-["_>"]'>
