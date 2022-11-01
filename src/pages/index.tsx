@@ -1,23 +1,32 @@
 import type { NextPage } from 'next'
-import Layout from '../components/layout'
 import Title from '../components/title'
 import Link from 'next/link'
+import Logo from '../components/logo'
 
-const Home: NextPage = () => (
-  <Layout>
-    <Title />
-    <div className="mx-auto px-8 max-w-3xl space-y-1">
-      <p>
-        Thanks for visiting!
-      </p>
-      <p>
-        If you&apos;re reading this, I&apos;ve only just started making this site.
-      </p>
-      <p>
-        I have an <Link href='/chess' className='text-red-500'>incomplete chess game</Link>.
-      </p>
-    </div>
-  </Layout>
-)
+const Home: NextPage = () => {
+  return (
+    <>
+      <Title />
+      <div className='absolute w-full top-1/2 -translate-y-1/2 flex flex-row [&>*]:grow text-lg'>
+        <div />
+        <div className='relative self-center text-center max-w-sm shrink-0 flex flex-col
+            '>
+          <div className='absolute -top-[72px] self-center [&>*]:inline [&>*]:align-middle space-x-4'>
+            <Logo size={64} />
+            <span className='font-display text-3xl font-extralight text-ruby-500'>rubytree</span>
+          </div>
+          <p className='mb-4'>Full-stack open-source web developer.</p>
+          <div className='grid grid-flow-row grid-cols-4 [&>a]:text-ruby-500 [&>a:hover]:before:content-["<_"] [&>a:hover]:after:content-["_>"]'>
+            <Link href='/chess'>chess</Link>
+            <Link href='https://github.com/rubytree33'>github</Link>
+            <Link href='https://www.linkedin.com/in/rubytree33/'>linkedin</Link>
+            <Link href='https://github.com/rubytree33/rubytree33.github.io'>source</Link>
+          </div>
+        </div>
+        <div />
+      </div>
+    </>
+  )
+}
 
 export default Home

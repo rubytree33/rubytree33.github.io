@@ -28,7 +28,7 @@ export default function Layout({ children }: Props) {
           </Link>
         </div>
       </header>
-      <main className="flex-grow">
+      <main className="flex-grow mx-auto px-8 max-w-3xl space-y-1">
         {children}
       </main>
     </div>
