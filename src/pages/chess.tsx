@@ -1,7 +1,8 @@
 import type { NextPage } from 'next'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
 import { MouseEventHandler, ReactElement, ReactFragment } from 'react'
-import Title from '../components/title'
+import Meta from '../components/meta'
 import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
@@ -203,7 +204,11 @@ const Page: NextPage = () => {
   }
 
   return <>
-    <Title>chess</Title>
+    <Meta
+      title='chess'
+      description='Chess in TypeScript, React, Redux'
+      path={useRouter().asPath}
+    />
 
     <ViewportCentered onClick={() => dispatch(deselectSquare())} className='shadow-2xl'>
       <TurnIndicator />

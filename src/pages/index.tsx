@@ -1,12 +1,17 @@
 import type { NextPage } from 'next'
-import Title from '../components/title'
 import Link from 'next/link'
+import { useRouter } from 'next/router'
+import Meta from '../components/meta'
 import Logo from '../components/logo'
 
 const Home: NextPage = () => {
   return (
     <>
-      <Title />
+      <Meta
+        title='home'
+        description="TypeScript/React developer rubytree's personal website"
+        path={useRouter().asPath}
+        />
       <div className='absolute w-full top-1/2 -translate-y-1/2 flex flex-row [&>*]:grow text-lg'>
         <div />
         <div className='relative self-center text-center max-w-sm shrink-0 flex flex-col
