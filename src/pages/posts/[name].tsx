@@ -1,4 +1,4 @@
-import { GetStaticPaths, GetStaticProps, InferGetStaticPropsType, NextPage } from 'next'
+import { GetStaticPaths } from 'next'
 import { ParsedUrlQuery } from 'querystring'
 import { Post, getPostNames, getPostByName } from '../../lib/posts'
 
