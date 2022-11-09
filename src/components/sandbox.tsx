@@ -26,43 +26,17 @@ const Sandbox = (props: SandboxProps) => {
   )
 } 
 
-/** This doesn't work, see https://github.com/codesandbox/sandpack/issues/640 */
 const TailwindSandbox = (props: SandboxProps) =>
   <Sandbox
     {...props}
-    files={{
-      '/tailwind.config.js': `
-        /** @type {import('tailwindcss').Config} */
-        module.exports = {
-          content: ["./**/*.{html,{j,t}s{,x}}"],
-          theme: {
-            extend: {},
-          },
-          plugins: [],
-        }
-      `,
-      '/postcss.config.js': `
-        module.exports = {
-          plugins: {
-            tailwindcss: {},
-            autoprefixer: {},
-          },
-        }
-      `,
-      '/styles.css': `
-        @tailwind base;
-        @tailwind components;
-        @tailwind utilities;
-      `,
-      ...props.files,
-    }}
-    customSetup={{
-      dependencies: {
-        tailwindcss: 'latest',
-        autoprefixer: 'latest',
-      },
+    options={{
+      ...props.options,
+      externalResources: [
+        ...props.options?.externalResources ?? [],
+        'https://cdn.tailwindcss.com'
+      ],
     }}
   />
 
 export type { SandboxProps }
-export { Sandbox }
+export { Sandbox, TailwindSandbox }
