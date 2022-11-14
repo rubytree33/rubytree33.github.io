@@ -171,7 +171,7 @@ const Page: NextPage = () => {
   }
 
   const Chessboard: Component = ({ className }) => {
-    return <div className={`${className} flex flex-col-reverse bg-ruby-700 rounded-md ring ring-ruby-700`}>
+    return <div className={`${className} w-full h-full flex flex-col-reverse bg-ruby-700 rounded-md ring ring-ruby-700`}>
       {_.range(8).map(rank =>
         <div key={rank} className='grow basis-1/8 flex flex-row'>
           {_.range(8).map(file =>
@@ -212,16 +212,18 @@ const Page: NextPage = () => {
 
     <ViewportCentered onClick={() => dispatch(deselectSquare())} className='shadow-2xl'>
       <TurnIndicator />
-      <Chessboard
+      <div
         className={`
           relative ${''/* set position so the board isn't obstructed by the turn/win indicator */}
-          w-[100vmin] h-[100vmin]
+          w-[95vmin] h-[95vmin]
           portrait:sm:w-[90vmin] portrait:sm:h-[90vmin]
           portrait:md:w-[75vmin] portrait:md:h-[75vmin]
           landscape:lg:w-[90vmin] landscape:lg:h-[90vmin]
           landscape:xl:w-[75vmin] landscape:xl:h-[75vmin]
         `}
-      />
+      >
+        <Chessboard />
+      </div>
     </ViewportCentered>
 
     <Link href='/' className='absolute left-3 top-3'>
