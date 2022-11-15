@@ -1,7 +1,7 @@
 import type { NextPage } from 'next'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
-import { MouseEventHandler, ReactElement, ReactFragment } from 'react'
+import { MouseEventHandler, ReactElement, ReactNode } from 'react'
 import Meta from '../components/meta'
 import Logo from '../components/logo'
 import _ from 'lodash'
@@ -10,10 +10,10 @@ import { selectSquare, deselectSquare, tryMove, completePromotion } from '../fea
 import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult, PieceType, coordString } from '../features/chess/chess'
 import styles from './chess.module.sass'
 
-type OnClick = MouseEventHandler<Element>
+type OnClick = MouseEventHandler
 interface Props {
   className?: string,
-  children?: ReactFragment,
+  children?: ReactNode,
   onClick?: OnClick,
 }
 type Component = (props: Props) => ReactElement
@@ -156,8 +156,8 @@ const Page: NextPage = () => {
           ${className}
           rounded-md
           ${isDarkSquare ? 'bg-ruby-700' : 'bg-ruby-400' }
-          ${isSelected && `z-20 ring ${turnWB('ring-ruby-50', 'ring-ruby-950')}`}
-          relative
+          ${isSelected && `ring ${turnWB('ring-ruby-50', 'ring-ruby-950')}`}
+          relative z-20
         `}
       >
         <TargetIndicator />
@@ -171,7 +171,7 @@ const Page: NextPage = () => {
   }
 
   const Chessboard: Component = ({ className }) => {
-    return <div className={`${className} w-full h-full flex flex-col-reverse bg-ruby-700 rounded-md ring ring-ruby-700`}>
+    return <div className={`${className} relative shadow-2xl flex flex-col-reverse bg-ruby-700 rounded-md ring ring-ruby-700`}>
       {_.range(8).map(rank =>
         <div key={rank} className='grow basis-1/8 flex flex-row'>
           {_.range(8).map(file =>
@@ -182,10 +182,11 @@ const Page: NextPage = () => {
     </div>
   }
 
-  const TurnIndicator: Component = () => {
+  const TurnIndicator: Component = ({ className }) => {
     return (
       <div
         className={`
+          ${className}
           absolute left-0 w-full
           motion-safe:transition-all
           rounded-md ring ring-offset-[12px] ring-ruby-700
@@ -210,25 +211,45 @@ const Page: NextPage = () => {
       path={useRouter().asPath}
     />
 
-    <ViewportCentered onClick={() => dispatch(deselectSquare())} className='shadow-2xl'>
-      <TurnIndicator />
-      <div
-        className={`
-          relative ${''/* set position so the board isn't obstructed by the turn/win indicator */}
-          w-[95vmin] h-[95vmin]
-          portrait:sm:w-[90vmin] portrait:sm:h-[90vmin]
-          portrait:md:w-[75vmin] portrait:md:h-[75vmin]
-          landscape:lg:w-[90vmin] landscape:lg:h-[90vmin]
-          landscape:xl:w-[75vmin] landscape:xl:h-[75vmin]
-        `}
-      >
-        <Chessboard />
+    <ViewportCentered
+      onClick={() => dispatch(deselectSquare())}
+      className={`
+        flex items-center
+        portrait:w-[80vmin] portrait:h-[90vmin] portrait:flex-col
+        landscape:w-[90vmin] landscape:h-[80vmin] landscape:flex-row
+      `}
+    >
+      <div className='relative grow portrait:flex-row landscape:flex-col'>
+        <TurnIndicator className='-z-20' />
+        <div className='w-[80vmin] h-[80vmin]'>
+          <Chessboard />
+        </div>
+      </div>
+      <div className='
+        rounded-md portrait:rounded-t-none landscape:rounded-l-none
+        ring ring-ruby-700 ring-offset-0
+      bg-ruby-700
+        relative z-10
+        portrait:w-[60vmin] portrait:h-[10vmin]
+        landscape:w-[10vmin] landscape:h-[60vmin]
+        flex portrait:flex-row landscape:flex-col [&>*]:basis-1/6 items-center
+      '>
+        {/* square 1 */}
+        <div></div>
+        {/* square 2 */}
+        <div></div>
+        {/* square 3 */}
+        <div></div>
+        {/* square 4 */}
+        <div></div>
+        {/* square 5 */}
+        <div></div>
+        {/* square 6 */}
+        <Link href='/' className='h-full'>
+          <Logo alt='back' className='h-full w-full [&_circle]:fill-transparent [&_path]:stroke-ruby-100' />
+        </Link>
       </div>
     </ViewportCentered>
-
-    <Link href='/' className='absolute left-3 top-3'>
-      <Logo alt='back' size={48} className='z-50 drop-shadow-sm opacity-30 hover:opacity-100 active:opacity-100' />
-    </Link>
   </>
 }
 
