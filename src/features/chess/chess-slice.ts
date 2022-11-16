@@ -31,6 +31,10 @@ function changeGame(state: ChessState, game: Chess) {
   state.history.push(game)
 }
 
+function _undoMove(state: ChessState): void {
+  state.history.pop()
+}
+
 /** Check if this move is illegal and if so emit an error to console */
 function checkIllegal(state: ChessState, move: Move): boolean {
   const isIllegal = !canMove(getGame(state), move)
@@ -96,10 +100,14 @@ const chessSlice = createSlice({
 
     restart(state) {
       changeGame(state, initialState.history[0])
-    }
+    },
+
+    undoMove(state) {
+      _undoMove(state)
+    },
   },
 })
 
-export const { selectSquare, deselectSquare, tryMove, completePromotion, restart } = chessSlice.actions
+export const { selectSquare, deselectSquare, tryMove, completePromotion, restart, undoMove } = chessSlice.actions
 export { getGame }
 export default chessSlice.reducer
