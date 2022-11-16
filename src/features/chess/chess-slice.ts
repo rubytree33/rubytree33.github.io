@@ -16,7 +16,7 @@ interface ChessState {
 }
 
 /** Reset move selection */
-function deselect(state: ChessState) {
+function deselect(state: ChessState): void {
   state.selection = null
   state.promotionDraft = null
 }
@@ -27,7 +27,7 @@ function getGame(state: ChessState): Chess {
   return game
 }
 
-function changeGame(state: ChessState, game: Chess) {
+function changeGame(state: ChessState, game: Chess): void {
   state.history.push(game)
 }
 
