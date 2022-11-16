@@ -6,7 +6,7 @@ import Meta from '../components/meta'
 import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
-import { selectSquare, deselectSquare, tryMove, completePromotion } from '../features/chess/chess-slice'
+import { getGame, selectSquare, deselectSquare, tryMove, completePromotion } from '../features/chess/chess-slice'
 import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult, PieceType, coordString } from '../features/chess/chess'
 import styles from './chess.module.sass'
 
@@ -33,7 +33,8 @@ const ViewportCentered: Component = ({ children, onClick, className }) =>
 const Page: NextPage = () => {
   const dispatch = useAppDispatch()
   const chess = useAppSelector(state => state.chess)
-  const { game, selection, promotionDraft } = chess
+  const { selection, promotionDraft } = chess
+  const game = getGame(chess)
   const { turnColor, gameResult } = game
   const targeted: Coord[] = selection ? legalMovesFrom(game, selection).map(move => move.to) : []
 
