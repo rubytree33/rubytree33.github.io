@@ -32,7 +32,7 @@ function changeGame(state: ChessState, game: Chess): void {
 }
 
 function _undoMove(state: ChessState): void {
-  state.history.pop()
+  if (state.history.length > 1) state.history.pop()
 }
 
 /** Check if this move is illegal and if so emit an error to console */

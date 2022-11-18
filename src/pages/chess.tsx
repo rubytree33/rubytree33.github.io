@@ -6,9 +6,10 @@ import Meta from '../components/meta'
 import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
-import { getGame, selectSquare, deselectSquare, tryMove, completePromotion } from '../features/chess/chess-slice'
+import { getGame, selectSquare, deselectSquare, tryMove, completePromotion, undoMove, restart, conclude } from '../features/chess/chess-slice'
 import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult, PieceType, coordString } from '../features/chess/chess'
 import styles from './chess.module.sass'
+import { PayloadAction } from '@reduxjs/toolkit'
 
 type OnClick = MouseEventHandler
 interface Props {
@@ -205,6 +206,27 @@ const Page: NextPage = () => {
     )
   }
 
+  interface SidebarButtonProps {
+    payload: PayloadAction<any>
+    text: string
+    y?: number
+  }
+  const SidebarButton = ({ payload, text, y = 0 }: SidebarButtonProps) => {
+    return (
+      <button
+        onClick={e => { e.stopPropagation(); dispatch(payload) }}
+      >
+        <svg viewBox='0 0 24 24' className='[&_*]:overflow-visible'>
+          <text x='50%' y={`${55+y}%`} height='100%' dominantBaseline='middle' textAnchor='middle'
+            className='fill-ruby-100'
+          >
+            {text}
+          </text>
+        </svg>
+      </button>
+    )
+  }
+
   return <>
     <Meta
       title='chess'
@@ -233,19 +255,16 @@ const Page: NextPage = () => {
         relative z-10
         portrait:w-[60vmin] portrait:h-[10vmin]
         landscape:w-[10vmin] landscape:h-[60vmin]
-        flex portrait:flex-row landscape:flex-col [&>*]:basis-1/6 items-center
+        flex portrait:flex-row landscape:flex-col items-center
+        [&>*]:w-[10vmin] [&>*]:h-[10vmin]
+        [&>:hover]:opacity-70
       '>
-        {/* square 1 */}
-        <div></div>
-        {/* square 2 */}
-        <div></div>
-        {/* square 3 */}
-        <div></div>
-        {/* square 4 */}
-        <div></div>
-        {/* square 5 */}
-        <div></div>
-        {/* square 6 */}
+        {/* zero-width space U+200B prevents text display error */}
+        <SidebarButton text={'\u200b⚐'} y={5} payload={conclude(turnWB(GameResult.BlackWins, GameResult.WhiteWins))} />
+        <SidebarButton text='½' payload={conclude(GameResult.Stalemate)} />
+        <SidebarButton text='⤺' payload={undoMove()} />
+        <SidebarButton text='↺' payload={restart()} />
+        <div />
         <Link href='/' className='h-full'>
           <Logo alt='back' className='h-full w-full [&_circle]:fill-transparent [&_path]:stroke-ruby-100' />
         </Link>
