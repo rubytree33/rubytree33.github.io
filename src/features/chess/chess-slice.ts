@@ -1,6 +1,6 @@
-import { createSlice, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, freeze, PayloadAction } from '@reduxjs/toolkit'
 import _ from 'lodash'
-import { Coord, Move, Chess, PieceType, newChess, pieceAt, canMove, afterMove, doesNeedPromotion } from './chess'
+import { Coord, Move, Chess, PieceType, newChess, canMove, afterMove, doesNeedPromotion, GameResult } from './chess'
 
 interface ChessState {
   /** The coordinate of the selected piece if there is one */
@@ -105,9 +105,15 @@ const chessSlice = createSlice({
     undoMove(state) {
       _undoMove(state)
     },
+
+    conclude(state, action: PayloadAction<GameResult>) {
+      const game = _.cloneDeep(freeze(getGame(state), true))
+      game.gameResult = action.payload
+      changeGame(state, game)
+    }
   },
 })
 
-export const { selectSquare, deselectSquare, tryMove, completePromotion, restart, undoMove } = chessSlice.actions
+export const { selectSquare, deselectSquare, tryMove, completePromotion, restart, undoMove, conclude } = chessSlice.actions
 export { getGame }
 export default chessSlice.reducer
