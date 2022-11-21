@@ -16,21 +16,21 @@ const Meta: (props: MetaProps) => ReactElement = ({ title, description, path, im
   imageURL ||= `https://${domain}/wordmark.png`
   return (
     <Head>
-      <title>{fullTitle}</title>
-      <meta name='description' content={description} />
+      <title key='title'>{fullTitle}</title>
+      <meta key='description' name='description' content={description} />
 
-      <meta property='og:url' content={url} />
-      <meta property='og:type' content='website' />
-      <meta property='og:title' content={fullTitle} />
-      <meta property='og:description' content={description} />
-      <meta property='og:image' content={imageURL} />
+      <meta key='og:url' property='og:url' content={url} />
+      <meta key='og:type' property='og:type' content='website' />
+      <meta key='og:title' property='og:title' content={fullTitle} />
+      <meta key='og:description' property='og:description' content={description} />
+      <meta key='og:image' property='og:image' content={imageURL} />
 
-      <meta name='twitter:card' content='summary_large_image' />
-      <meta property='twitter:domain' content={domain} />
-      <meta property='twitter:url' content={url} />
-      <meta name='twitter:title' content={fullTitle} />
-      <meta name='twitter:description' content={description} />
-      <meta name='twitter:image' content={imageURL} />
+      <meta key='twitter:card' name='twitter:card' content='summary_large_image' />
+      <meta key='twitter:domain' property='twitter:domain' content={domain} />
+      <meta key='twitter:url' property='twitter:url' content={url} />
+      <meta key='twitter:title' name='twitter:title' content={fullTitle} />
+      <meta key='twitter:description' name='twitter:description' content={description} />
+      <meta key='twitter:image' name='twitter:image' content={imageURL} />
     </Head>
   )
 }
