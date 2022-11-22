@@ -153,7 +153,7 @@ const Page: NextPage = () => {
       )
     }
 
-    return <>
+    return (
       <button key={file} onClick={onClick} className={`
           ${className}
           rounded-md
@@ -169,7 +169,7 @@ const Page: NextPage = () => {
         <Coordinate />
         <PromotionOptions />
       </button>
-    </>
+    )
   }
 
   const Chessboard: Component = ({ className }) => {
@@ -206,12 +206,15 @@ const Page: NextPage = () => {
     )
   }
 
-  interface SidebarButtonProps {
+  const SidebarButton = ({
+    payload,
+    text,
+    y = 0,
+  }: {
     payload: PayloadAction<any>
     text: string
     y?: number
-  }
-  const SidebarButton = ({ payload, text, y = 0 }: SidebarButtonProps) => {
+  }) => {
     return (
       <button
         onClick={e => { e.stopPropagation(); dispatch(payload) }}
