@@ -195,9 +195,7 @@ const Page: NextPage = () => {
     y?: number
   }) => {
     return (
-      <button
-        onClick={e => { e.stopPropagation(); dispatch(payload) }}
-      >
+      <button onClick={e => { e.stopPropagation(); dispatch(payload) }}>
         <svg viewBox='0 0 24 24' className='[&_*]:overflow-visible'>
           <text x='50%' y={`${55+y}%`} height='100%' dominantBaseline='middle' textAnchor='middle'
             className='fill-ruby-100'
@@ -213,7 +211,7 @@ const Page: NextPage = () => {
     return (
       <div className={`
         ${className}
-        rounded-md portrait:rounded-t-none landscape:rounded-l-none
+        rounded-md
         ring ring-ruby-700 ring-offset-0
         bg-ruby-700
         relative z-10
@@ -222,15 +220,20 @@ const Page: NextPage = () => {
         [&>:hover]:opacity-70
         shadow-2xl
       `}>
+        <Link href='/' className='h-full'>
+          <Logo alt='back'
+            className='
+              h-full w-full scale-75 
+              overflow-visible
+              [&_circle]:fill-ruby-100 [&_path]:stroke-ruby-600
+            '
+          />
+        </Link>
         {/* zero-width space U+200B prevents text display error */}
         <SidebarButton text={'\u200b⚐'} y={5} payload={conclude(turnWB(GameResult.BlackWins, GameResult.WhiteWins))} />
         <SidebarButton text='½' payload={conclude(GameResult.Stalemate)} />
         <SidebarButton text='⤺' payload={undoMove()} />
         <SidebarButton text='↺' payload={restart()} />
-        <div />  {/* empty square */}
-        <Link href='/' className='h-full'>
-          <Logo alt='back' className='h-full w-full [&_circle]:fill-transparent [&_path]:stroke-ruby-100' />
-        </Link>
       </div>
     )
   }
@@ -238,12 +241,12 @@ const Page: NextPage = () => {
   const ChessboardAndSidebar: Component = () => {
     return (
       <div className='
-        flex items-center
-         portrait:w-[80vmin]  portrait:h-[90vmin]  portrait:flex-col
-        landscape:w-[90vmin] landscape:h-[80vmin] landscape:flex-row
+        flex
+         portrait:w-[80vmin]  portrait:h-[90vmin]  portrait:flex-col  portrait:items-center
+        landscape:w-[90vmin] landscape:h-[80vmin] landscape:flex-row landscape:items-start
       '>
-        <Chessboard className='basis-[calc(8/9*100%)] aspect-square' />
-        <Sidebar className='basis-[calc(1/9*100%)]' />
+        <Chessboard className='basis-[calc(8/9*100%)] portrait:-translate-y-2 landscape:-translate-x-2 aspect-square' />
+        <Sidebar    className='basis-[calc(1/9*100%)]  portrait:translate-y-2  landscape:translate-x-2' />
       </div>
     )
   }
