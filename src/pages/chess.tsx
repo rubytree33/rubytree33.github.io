@@ -261,6 +261,7 @@ const Page: NextPage = () => {
         flex portrait:flex-row landscape:flex-col items-center
         [&>*]:w-[10vmin] [&>*]:h-[10vmin]
         [&>:hover]:opacity-70
+        shadow-2xl
       '>
         {/* zero-width space U+200B prevents text display error */}
         <SidebarButton text={'\u200b⚐'} y={5} payload={conclude(turnWB(GameResult.BlackWins, GameResult.WhiteWins))} />
