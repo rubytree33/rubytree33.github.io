@@ -158,8 +158,8 @@ const Page: NextPage = () => {
           ${className}
           rounded-md
           ${isDarkSquare ? 'bg-ruby-700' : 'bg-ruby-400' }
-          ${isSelected && `z-40 ring ${turnWB('ring-ruby-50', 'ring-ruby-950')}`}
-          relative z-20
+          ${isSelected ? `z-40 ring ${turnWB('ring-ruby-50', 'ring-ruby-950')}` : 'z-20'}
+          relative
         `}
       >
         <TargetIndicator />
