@@ -196,9 +196,9 @@ const Page: NextPage = () => {
   }) => {
     return (
       <button onClick={e => { e.stopPropagation(); dispatch(payload) }}>
-        <svg viewBox='0 0 24 24' className='[&_*]:overflow-visible'>
-          <text x='50%' y={`${55+y}%`} height='100%' dominantBaseline='middle' textAnchor='middle'
-            className='fill-ruby-100'
+        <svg viewBox='0 0 24 24'>
+          <text x='50%' y={`${54+y}%`} height='100%' dominantBaseline='middle' textAnchor='middle'
+            className='fill-ruby-100 overflow-visible'
           >
             {text}
           </text>
