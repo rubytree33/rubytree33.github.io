@@ -184,28 +184,6 @@ const Page: NextPage = () => {
     </div>
   }
 
-  const TurnIndicator: Component = ({ className }) => {
-    return (
-      <div
-        className={`
-          ${className}
-          absolute left-0 w-full
-          motion-safe:transition-all
-          rounded-md ring ring-offset-[12px] ring-ruby-700
-          ${gameResult === null  // if game is still going indicate side and color
-            ? `h-1/4 ${turnWB('ring-offset-ruby-50 top-3/4', 'ring-offset-ruby-950 top-0')}`
-            : 'top-0 h-full'  // else indicator covers entire area with color
-          }
-          ${isStalemate && 'ring-offset-neutral-500'}
-          ${winner !== null && chooseWB(winner,
-            'ring-offset-ruby-50',
-            'ring-offset-ruby-950'
-          )}
-        `}
-      />
-    )
-  }
-
   const SidebarButton = ({
     payload,
     text,
@@ -230,51 +208,58 @@ const Page: NextPage = () => {
     )
   }
 
-  return <>
-    <Meta
-      title='chess'
-      description='Chess in TypeScript, React, Redux'
-      path={useRouter().asPath}
-    />
-
-    <ViewportCentered
-      onClick={() => dispatch(deselectSquare())}
-      className={`
-        flex items-center
-        portrait:w-[80vmin] portrait:h-[90vmin] portrait:flex-col
-        landscape:w-[90vmin] landscape:h-[80vmin] landscape:flex-row
-      `}
-    >
-      <div className='relative grow portrait:flex-row landscape:flex-col'>
-        <TurnIndicator className='-z-20' />
-        <div className='w-[80vmin] h-[80vmin]'>
-          <Chessboard />
-        </div>
-      </div>
-      <div className='
+  const Sidebar: Component = ({ className }) => {
+    return (
+      <div className={`
+        ${className}
         rounded-md portrait:rounded-t-none landscape:rounded-l-none
         ring ring-ruby-700 ring-offset-0
-      bg-ruby-700
+        bg-ruby-700
         relative z-10
-        portrait:w-[60vmin] portrait:h-[10vmin]
-        landscape:w-[10vmin] landscape:h-[60vmin]
         flex portrait:flex-row landscape:flex-col items-center
-        [&>*]:w-[10vmin] [&>*]:h-[10vmin]
+        [&>*]:w-[10vmin] [&>*]:aspect-square
         [&>:hover]:opacity-70
         shadow-2xl
-      '>
+      `}>
         {/* zero-width space U+200B prevents text display error */}
         <SidebarButton text={'\u200b⚐'} y={5} payload={conclude(turnWB(GameResult.BlackWins, GameResult.WhiteWins))} />
         <SidebarButton text='½' payload={conclude(GameResult.Stalemate)} />
         <SidebarButton text='⤺' payload={undoMove()} />
         <SidebarButton text='↺' payload={restart()} />
-        <div />
+        <div />  {/* empty square */}
         <Link href='/' className='h-full'>
           <Logo alt='back' className='h-full w-full [&_circle]:fill-transparent [&_path]:stroke-ruby-100' />
         </Link>
       </div>
-    </ViewportCentered>
-  </>
+    )
+  }
+
+  const ChessboardAndSidebar: Component = () => {
+    return (
+      <div className='
+        flex items-center
+         portrait:w-[80vmin]  portrait:h-[90vmin]  portrait:flex-col
+        landscape:w-[90vmin] landscape:h-[80vmin] landscape:flex-row
+      '>
+        <Chessboard className='basis-[calc(8/9*100%)] aspect-square' />
+        <Sidebar className='basis-[calc(1/9*100%)]' />
+      </div>
+    )
+  }
+
+  return (
+    <>
+      <Meta
+        title='chess'
+        description='Chess in TypeScript, React, Redux'
+        path={useRouter().asPath}
+      />
+
+      <ViewportCentered onClick={() => dispatch(deselectSquare())}>
+        <ChessboardAndSidebar />
+      </ViewportCentered>
+    </>
+  )
 }
 
 export default Page
