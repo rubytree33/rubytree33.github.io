@@ -44,7 +44,7 @@ const Page: NextPage = () => {
     gameResult === GameResult.WhiteWins ? PieceColor.White
     : gameResult === GameResult.BlackWins ? PieceColor.Black
     : null
-  const loser: PieceColor | null = winner && chooseWB(winner, PieceColor.Black, PieceColor.White)
+  const loser: PieceColor | null = winner !== null ? chooseWB(winner, PieceColor.Black, PieceColor.White) : null
 
   const turnWB = _.partial(chooseWB, turnColor)
 
