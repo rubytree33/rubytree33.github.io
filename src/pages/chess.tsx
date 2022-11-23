@@ -220,7 +220,7 @@ const Page: NextPage = () => {
         [&>:hover]:opacity-70
         shadow-2xl
       `}>
-        <Link href='/' className='h-full'>
+        <Link href='/' className='h-full box-content border-ruby-800 landscape:border-b portrait:border-r'>
           <Logo alt='back'
             className='
               h-full w-full scale-75 
