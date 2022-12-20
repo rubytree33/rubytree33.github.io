@@ -14,18 +14,28 @@ const Home: NextPage = () => {
         />
       <div className='absolute w-full top-1/2 -translate-y-1/2 flex flex-row [&>*]:grow text-lg'>
         <div />
-        <div className='relative self-center text-center max-w-sm shrink-0 flex flex-col
-            '>
+        <div className='relative items-center text-center max-w-sm shrink-0 flex flex-col'>
           <div className='absolute -top-[72px] self-center [&>*]:inline [&>*]:align-middle space-x-4'>
             <Logo size={64} />
             <span className='font-display text-4xl font-extralight text-ruby-500'>rubytree</span>
           </div>
           <p className='mb-4'>Full-stack open-source web developer.</p>
-          <div className='grid grid-flow-row grid-cols-4 [&>a]:text-ruby-500 [&>a:hover]:before:content-["<_"] [&>a:hover]:after:content-["_>"]'>
-            <Link href='/chess'>chess</Link>
-            <Link href='https://github.com/rubytree33'>github</Link>
-            <Link href='https://www.linkedin.com/in/rubytree33/'>linkedin</Link>
-            <Link href='https://github.com/rubytree33/rubytree33.github.io'>source</Link>
+          <div className='
+            flex flex-col items-center w-4/5
+            [&>*]:grid [&>*]:grid-flow-row [&>*~*]:grid-cols-2 [&>*]:w-full
+            [&_a]:text-ruby-500
+            [&_a:hover]:before:content-["<_"]
+            [&_a:hover]:after:content-["_>"]
+          '>
+            <div>
+              <Link href='/chess'>chess</Link>
+            </div>
+            <div>
+              <Link href='https://github.com/rubytree33/rubytree33.github.io'>source</Link>
+              <Link href='https://github.com/rubytree33'>github</Link>
+              <Link href='https://www.linkedin.com/in/rubytree33/'>linkedin</Link>
+              <Link href='https://triplebyte.com/tb/thomas-moore-cotboog/certificate'>triplebyte</Link>
+            </div>
           </div>
         </div>
         <div />
