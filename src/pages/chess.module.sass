@@ -2,6 +2,7 @@
 
 @mixin text-border($r, $color: var(--tw-shadow-color))
   $shadow: null
+  // one text shadow per pixel around the (virtual) circle
   $C: ceil(2*math.$pi * $r / 1px)
   @for $i from 0 to $C
     $theta: 2*math.$pi * $i/$C * 1rad
