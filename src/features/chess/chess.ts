@@ -34,6 +34,11 @@ const enum PieceColor { White, Black }
  *  Pawn, **kNight**, Bishop, Rook, Queen, King */
 const enum PieceType { P, N, B, R, Q, K }
 
+function pieceTypeString(pieceType: PieceType): string {
+  // ♙♘♗♖♕♔♟♞♝♜♛♚ = white,black PNBRQK but we use black only for fill
+  return '♟♞♝♜♛♚'[pieceType]
+}
+
 /** A chess piece, or empty. (Board square contents) */
 type P = null | { color: PieceColor, type: PieceType }
 
@@ -434,5 +439,5 @@ function afterMove(game: Chess, move: Move): Chess | null {
 }
 
 export type { Coord, Move, P, Chess }
-export { File, Rank, PieceColor, PieceType, GameResult, newChess, legalMoves, legalMovesFrom, isInCheck, canMove, afterMove, doesNeedPromotion, coordString }
+export { File, Rank, PieceColor, PieceType, GameResult, newChess, legalMoves, legalMovesFrom, isInCheck, canMove, afterMove, doesNeedPromotion, coordString, pieceTypeString }
 export const pieceAt = at

@@ -7,7 +7,7 @@ import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { getGame, selectSquare, deselectSquare, tryMove, completePromotion, undoMove, restart, conclude } from '../features/chess/chess-slice'
-import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult, PieceType, coordString } from '../features/chess/chess'
+import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult, PieceType, coordString, pieceTypeString } from '../features/chess/chess'
 import styles from './chess.module.sass'
 import { PayloadAction } from '@reduxjs/toolkit'
 
@@ -92,7 +92,7 @@ const Page: NextPage = () => {
             : `${chooseWB(piece.color, 'fill-ruby-50', 'fill-ruby-950')}`
           }
         `}>
-          {'♟♞♝♜♛♚'[piece.type] /* ♙♘♗♖♕♔♟♞♝♜♛♚ = white,black PNBRQK but we use black only for fill */}
+          {pieceTypeString(piece.type)}
         </text>}
       </svg>
     }
