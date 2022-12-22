@@ -122,6 +122,7 @@ const Page: NextPage = () => {
       )
     }
 
+    /** Promotion options which appear when a promoting move is being planned into this square */
     const PromotionOptions: Component = () => {
       return (
         _.isEqual(coord, promotionDraft?.to) ? (
