@@ -23,11 +23,9 @@ const chooseWB = <T,>(color: PieceColor, ifWhite: T, ifBlack: T): T =>
   color === PieceColor.White ? ifWhite : ifBlack
 
 const ViewportCentered: Component = ({ children, onClick, className }) =>
-  <div className="absolute left-0 top-0">
-    <div className="relative w-screen h-screen" onClick={onClick}>
-      <div className={`${className} absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`}>
-        {children}
-      </div>
+  <div className="fixed left-0 top-0 w-screen h-screen" onClick={onClick}>
+    <div className={`${className} absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2`}>
+      {children}
     </div>
   </div>
 
