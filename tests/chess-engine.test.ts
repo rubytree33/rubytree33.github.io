@@ -75,7 +75,7 @@ const testGame = (name: string, gameString: string): void => {
     }, newChess() as Chess | null)
     if (!finishedGame) return  // the null test is in the reduce so we don't need to repeat it
 
-    expect(finishedGame.gameResult).toBe(result)
+    expect(finishedGame.gameResult).toBe(result ?? null)
   })
 }
 
@@ -86,4 +86,6 @@ describe('chess engine', () => {
 
   testGame("fool's mate", '1. f3 e5 2. g4 Qh4# 0-1')
   testGame("reverse fool's mate", '1. e4 f6 2. e5 g5 3. Qh5# 1-0')
+  testGame('check', '1. e4 d5 2. Bb5+ Bd7 3. Bxd7+ Qxd7')
+  testGame('promotion and check', '1. a4 b5 2. axb5 a6 3. bxa6 Nc6 4. a7 Rb8 5. a8=Q Nb4 6. Qe4 e5 7. Qxe5+')
 })
