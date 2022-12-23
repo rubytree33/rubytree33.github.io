@@ -1,5 +1,5 @@
 import { describe, test, expect } from '@jest/globals'
-import { Coord, newChess, PieceColor, PieceType, File, Rank, GameResult, afterMove, legalMoves, Chess, pieceAt, isInCheck } from '../src/features/chess/chess'
+import { Coord, newChess, PieceColor, PieceType, File, Rank, GameResult, afterMove, legalMoves, Chess, pieceAt, isInCheck, opponent, winner } from '../src/features/chess/chess'
 import nearley, { CompiledRules } from 'nearley'
 import grammar from './chess-grammar'
 import _ from 'lodash'
@@ -17,62 +17,59 @@ interface ParsedGame {
   result?: GameResult
 }
 
+/** Confirm that a game plays out under the engine as expected per its notation.
+ * @param name The name of the game, for logging purposes.
+ * @param gameString A text representation of the game in standard notation.
+ */
 const testGame = (name: string, gameString: string): void => {
   test(`can simulate ${name}`, () => {
     // `as` is safe so long as the compiler works
     const parser = new nearley.Parser(nearley.Grammar.fromCompiled(grammar as CompiledRules))
     // `ParsedGame` needs to be updated manually since nearley doesn't supply type inference
     const { moves, result } = parser.feed(gameString).results[0] as ParsedGame
-    console.log(moves)
+
+    // compute the result of the moves while checking that the game follows the notation along the way
     const finishedGame = moves.reduce((before, moveRecord) => {
       // stop doing checks when the game state is no longer valid
       if (!before) return before
-      const { color, type, from, capture, to, promotesTo, moveNote } = moveRecord
 
       // are we on the right turn?
-      expect(before.turnColor).toEqual(color)
+      expect(before.turnColor).toEqual(moveRecord.color)
 
-      const opponent = color === PieceColor.White ? PieceColor.Black : PieceColor.White
-      const isCapture = !!capture
-      const targetPiece = pieceAt(before, to)
-
+      const isCapture = !!moveRecord.capture
+      const targetPiece = pieceAt(before, moveRecord.to)
       // are we capturing or not capturing as recorded?
-      expect(targetPiece?.color === opponent).toBe(isCapture)
+      expect(targetPiece?.color === opponent(moveRecord.color)).toBe(isCapture)
       expect(!targetPiece).toBe(!isCapture)
 
       // find the origin of the move to help the engine
       const possibleMoves = legalMoves(before).filter(move =>
-          _.isEqual(moveRecord.to, move.to)  // same target
-          && moveRecord.promotesTo === move.promotesTo  // same resulting piece
-          && moveRecord.color === pieceAt(before, move.from)?.color  // same color
-          && moveRecord.type === pieceAt(before, move.from)?.type  // same type
-          && (!moveRecord.from.file || moveRecord.from.file === move.from.file)  // same starting file if mentioned
-          && (!moveRecord.from.rank || moveRecord.from.rank === move.from.rank)  // same starting rank if mentioned
-          )
-
-      // is the notation ambiguous due to an incorrect board state?
+        _.isEqual(moveRecord.to, move.to)  // same target
+        && moveRecord.promotesTo === move.promotesTo  // same resulting piece
+        && moveRecord.color === pieceAt(before, move.from)?.color  // same color
+        && moveRecord.type === pieceAt(before, move.from)?.type  // same type
+        && (!moveRecord.from.file || moveRecord.from.file === move.from.file)  // same starting file if mentioned
+        && (!moveRecord.from.rank || moveRecord.from.rank === move.from.rank)  // same starting rank if mentioned
+      )
+      // the notation should be unambiguous, and we must have a move to play to continue
       expect(possibleMoves.length).toEqual(1)
 
-      if (possibleMoves.length < 1) return null  // need a move to continue playing
-      const move = Object.assign({},
-        { from: possibleMoves[0].from, to },
-        promotesTo ? { promotesTo } : {},
-      )
+      const move = {
+        from: possibleMoves[0].from, 
+        to: moveRecord.to,
+        ...moveRecord.promotesTo ? { promotesTo: moveRecord.promotesTo } : {},
+      }
       const after = afterMove(before, move)
-
+      // the move must be playable to continue
       expect(after).not.toBeNull()
-
+      // (this is just to make the change of type explicit for typescript)
       if (!after) return null
 
-      expect(isInCheck(after)).toBe(moveNote === '+')
+      // the player whose turn it now is should be in check if the notation says so
+      expect(isInCheck(after)).toBe(['+', '#'].includes(moveRecord.moveNote))
 
-      const winner = after.gameResult !== null && (
-        after.gameResult === GameResult.WhiteWins ? PieceColor.White
-        : after.gameResult === GameResult.BlackWins ? PieceColor.Black
-        : null
-      )
-
-      expect(winner === color).toBe(moveNote === '#')
+      // the game should have ended in checkmate if the notation says so
+      expect(winner(after) === moveRecord.color).toBe(moveRecord.moveNote === '#')
 
       return after
     }, newChess() as Chess | null)

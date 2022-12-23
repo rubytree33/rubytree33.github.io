@@ -30,6 +30,14 @@ function coordString(coord: Coord): string {
 
 const enum PieceColor { White, Black }
 
+function chooseWB<T>(color: PieceColor, ifWhite: T, ifBlack: T): T {
+  return color === PieceColor.White ? ifWhite : ifBlack
+}
+
+function opponent(color: PieceColor): PieceColor {
+  return chooseWB(color, PieceColor.Black, PieceColor.White)
+}
+
 /** Chess piece type in standard notation:
  *  Pawn, **kNight**, Bishop, Rook, Queen, King */
 const enum PieceType { P, N, B, R, Q, K }
@@ -213,8 +221,15 @@ function kingCoord(game: Chess): Coord {
   return friendlyCoords(game).filter(c => at(game, c)?.type === PieceType.K)[0]
 }
 
+function winner(game: Chess): PieceColor | null {
+  const { gameResult } = game
+  if (gameResult === GameResult.WhiteWins) return PieceColor.White
+  if (gameResult === GameResult.BlackWins) return PieceColor.Black
+  return null
+}
+
 function isInCheck(game: Chess): boolean {
-  return isAttacked(game, kingCoord(game))
+  return winner(game) === opponent(game.turnColor) || isAttacked(game, kingCoord(game))
 }
 
 /** The board as is, with the turn passed to the next player */
@@ -439,5 +454,5 @@ function afterMove(game: Chess, move: Move): Chess | null {
 }
 
 export type { Coord, Move, P, Chess }
-export { File, Rank, PieceColor, PieceType, GameResult, newChess, legalMoves, legalMovesFrom, isInCheck, canMove, afterMove, doesNeedPromotion, coordString, pieceTypeString }
+export { File, Rank, PieceColor, PieceType, GameResult, newChess, legalMoves, legalMovesFrom, isInCheck, canMove, afterMove, doesNeedPromotion, coordString, pieceTypeString, chooseWB, opponent, winner }
 export const pieceAt = at

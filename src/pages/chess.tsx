@@ -7,7 +7,7 @@ import Logo from '../components/logo'
 import _ from 'lodash'
 import { useAppDispatch, useAppSelector } from '../app/hooks'
 import { getGame, selectSquare, deselectSquare, tryMove, completePromotion, undoMove, restart, conclude } from '../features/chess/chess-slice'
-import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult, PieceType, coordString, pieceTypeString } from '../features/chess/chess'
+import { Coord, P, pieceAt, legalMovesFrom, PieceColor, GameResult, PieceType, coordString, pieceTypeString, chooseWB } from '../features/chess/chess'
 import styles from './chess.module.sass'
 import { PayloadAction } from '@reduxjs/toolkit'
 
@@ -18,9 +18,6 @@ interface Props {
   onClick?: OnClick,
 }
 type Component = (props: Props) => ReactElement
-
-const chooseWB = <T,>(color: PieceColor, ifWhite: T, ifBlack: T): T =>
-  color === PieceColor.White ? ifWhite : ifBlack
 
 const ViewportCentered: Component = ({ children, onClick, className }) =>
   <div className="fixed left-0 top-0 w-screen h-screen" onClick={onClick}>
