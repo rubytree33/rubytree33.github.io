@@ -32,8 +32,8 @@ const Home: NextPage = () => {
             </div>
             <div>
               <Link href='https://github.com/rubytree33/rubytree33.github.io'>source</Link>
-              <Link href='https://github.com/rubytree33'>github</Link>
               <Link href='https://www.linkedin.com/in/rubytree33/'>linkedin</Link>
+              <Link href='https://github.com/rubytree33'>github</Link>
               <Link href='https://triplebyte.com/tb/thomas-moore-cotboog/certificate'>triplebyte</Link>
             </div>
           </div>
