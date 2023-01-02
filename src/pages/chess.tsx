@@ -73,9 +73,8 @@ const Page: NextPage = () => {
     type PieceProps = Props & { piece: P }
 
     const Piece = ({ piece, className, onClick }: PieceProps): ReactElement => {
-      return <svg viewBox={`0 0 17 17`} className='group' onClick={onClick}>
+      return <svg viewBox={`0 0 17 17`} className={`group ${className}`} onClick={onClick}>
         {piece && <text x='50%' y='62%' dominantBaseline='middle' textAnchor='middle' className={`
-          ${className}
           font-chess
           ${piece.color === turnColor && !isSelected && gameResult === null && // selectable piece
             'group-hover:opacity-70'}
@@ -131,16 +130,19 @@ const Page: NextPage = () => {
               <div key={y} className='flex flex-col'>
                 {[0, 1].map(x => {
                   const newType = PieceType.N + y + 2*x
-                  return <Piece key={x}
-                    piece={{ color: turnColor, type: newType }}
-                    className={`
-                      ${textBorder2} ${isDarkSquare ? 'shadow-ruby-700' : 'shadow-ruby-400'}
-                    `}
-                    onClick={e => {
-                      e.stopPropagation()
-                      dispatch(completePromotion(newType))
-                    }}
-                  />
+                  return (
+                    <Piece key={x}
+                      piece={{ color: turnColor, type: newType }}
+                      className={`
+                        w-full
+                        ${textBorder2} ${isDarkSquare ? 'shadow-ruby-700' : 'shadow-ruby-400'}
+                      `}
+                      onClick={e => {
+                        e.stopPropagation()
+                        dispatch(completePromotion(newType))
+                      }}
+                    />
+                  )
                 }
                 )}
               </div>
@@ -153,10 +155,13 @@ const Page: NextPage = () => {
     return (
       <button key={file} onClick={onClick} className={`
           ${className}
-          rounded-md
+          relative rounded-md
           ${isDarkSquare ? 'bg-ruby-700' : 'bg-ruby-400' }
-          ${isSelected ? `z-40 ring ${turnWB('ring-ruby-50', 'ring-ruby-950')}` : 'z-20'}
-          relative
+          ${isSelected
+            ? `z-40 ring ${turnWB('ring-ruby-50', 'ring-ruby-950')}`
+            : 'z-20'
+          }
+          ${piece === null ? 'cursor-default' : ''}
         `}
       >
         <TargetIndicator />
