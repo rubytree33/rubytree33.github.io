@@ -22,15 +22,14 @@ const Home: NextPage = () => {
           <p className='mb-4'>Full-stack open-source web developer.</p>
           <div className='
             flex flex-col items-center w-4/5
-            [&>*]:grid [&>*]:grid-flow-row [&>*~*]:grid-cols-2 [&>*]:w-full
+            [&>*]:grid [&>*]:grid-flow-row [&>*]:grid-cols-2 [&>*]:w-full
             text-ruby-500                   font-normal
             [&_a:hover]:before:content-["<_"] [&_a]:before:font-normal
             [&_a:hover]:after:content-["_>"]  [&_a]:after:font-normal
           '>
-            <div className='font-semibold'>
-              <Link href='/chess'>chess</Link>
-            </div>
             <div>
+              <Link href='/chess' className='font-semibold'>chess</Link>
+              <Link href='https://www.upwork.com/freelancers/~01b7a7eae686bf7c9c'>upwork</Link>
               <Link href='https://github.com/rubytree33/rubytree33.github.io'>source</Link>
               <Link href='https://www.linkedin.com/in/rubytree33/'>linkedin</Link>
               <Link href='https://github.com/rubytree33'>github</Link>
